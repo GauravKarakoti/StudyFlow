@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-      {/* Cosmic background */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-card/50 to-background" />
         <div className="absolute inset-0 opacity-30">
