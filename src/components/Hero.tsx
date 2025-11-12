@@ -28,7 +28,7 @@ const Hero = () => {
               Transform the way you learn with AI-powered tools.
             </p>
             
-            <Link to="/dashboard">
+            <Link to="/select-branch">
               <Button size="lg" className="cosmic-glow hover-glow text-lg mx-8 my-6">
                 Start Taking Notes Free
               </Button>

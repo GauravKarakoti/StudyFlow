@@ -100,6 +100,35 @@ All colors MUST be HSL.
   .cosmic-glow {
     box-shadow: 0 0 30px hsl(320 50% 92% / 0.2), 0 0 60px hsl(240 40% 53% / 0.15);
   }
+
+  .prose {
+    color: hsl(var(--foreground) / 0.9);
+  }
+  .prose h1, .prose h2, .prose h3 {
+    color: hsl(var(--cosmic-glow));
+  }
+  .prose strong {
+    color: hsl(var(--foreground));
+  }
+  .prose ul > li::before {
+    background-color: hsl(var(--primary));
+  }
+  .prose ol > li::before {
+    color: hsl(var(--primary));
+  }
+
+  .no-download {
+    user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
+  }
+  .no-download::selection {
+    background: transparent;
+  }
+  .no-download::-moz-selection {
+    background: transparent;
+  }
   
   .cosmic-card {
     background: linear-gradient(135deg, hsl(285 62% 16% / 0.6), hsl(295 55% 34% / 0.4));

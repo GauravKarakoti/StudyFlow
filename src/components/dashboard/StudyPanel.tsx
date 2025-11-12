@@ -1,42 +1,51 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookMarked, Share2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BookMarked, Share2 } from "lucide-react";
 
-const StudyPanel = () => {
+interface StudyPanelProps {
+  topicId: string | null;
+}
+
+const StudyPanel = ({ topicId }: StudyPanelProps) => {
+  if (!topicId) {
+    return (
+      <div className="space-y-6">
+        <Card className="cosmic-card border-cosmic-accent/20">
+          <CardHeader>
+            <CardTitle className="text-lg text-cosmic-glow flex items-center gap-2">
+              <BookMarked className="w-5 h-5" />
+              Select a Topic
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-center py-10">
+              Please select a topic from the list to view the notes.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const note = [];
+
   return (
     <div className="space-y-6">
       <Card className="cosmic-card border-cosmic-accent/20">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-lg text-cosmic-glow flex items-center gap-2">
             <BookMarked className="w-5 h-5" />
-            GENETICS: THE BASICS
+            {/* {note.title} */}
+            Title
           </CardTitle>
           <Share2 className="w-4 h-4 text-muted-foreground" />
         </CardHeader>
         <CardContent className="space-y-4">
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• DNA & RNA Inheritance</li>
-            <li>• Molecular Genetics</li>
-          </ul>
-          
-          <div className="flex justify-center py-6">
-            <div className="text-8xl">🧬</div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="cosmic-card border-amber-400/30 bg-gradient-to-br from-amber-100 to-yellow-100">
-        <CardContent className="p-4 relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 h-6 w-6 text-gray-600 hover:text-gray-900"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-          <p className="text-sm italic text-white-800 font-medium">
-            Don't forget to review!!
-          </p>
+          <div
+            className="prose prose-invert prose-sm max-w-none no-download"
+            // dangerouslySetInnerHTML={{ __html: note.content }}
+            dangerouslySetInnerHTML={{ __html: '' }}
+            onContextMenu={(e) => e.preventDefault()}
+          />
         </CardContent>
       </Card>
     </div>

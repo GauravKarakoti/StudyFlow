@@ -1,15 +1,26 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getBranch, getSemester } from "@/lib/data";
 
-const NotebookCard = () => {
+interface NotebookCardProps {
+  branchId: string;
+  semesterId: string;
+}
+
+const NotebookCard = ({ branchId, semesterId }: NotebookCardProps) => {
+  const branch = getBranch(branchId);
+  const semester = getSemester(semesterId);
+
   return (
     <Card className="cosmic-card border-cosmic-accent/20 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="relative h-48 bg-gradient-to-br from-teal-400 via-emerald-400 to-lime-300 p-6 flex items-center justify-center">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent"></div>
-          <div className="relative text-center space-y-2">
-            <div className="text-6xl mb-4">📚</div>
-          </div>
-        </div>
+      <CardHeader>
+        <CardTitle className="text-xl text-cosmic-glow">
+          {branch?.name || "Branch"} - {semester?.name || "Semester"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">
+          Welcome! Select a subject from the left to view its topics.
+        </p>
       </CardContent>
     </Card>
   );
