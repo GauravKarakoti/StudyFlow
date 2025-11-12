@@ -11,6 +11,12 @@ const branches = [
 const semesters = [
   { id: "sem1", name: "Semester 1" },
   { id: "sem2", name: "Semester 2" },
+  { id: "sem3", name: "Semester 3" },
+  { id: "sem4", name: "Semester 4" },
+  { id: "sem5", name: "Semester 5" },
+  { id: "sem6", name: "Semester 6" },
+  { id: "sem7", name: "Semester 7" },
+  { id: "sem8", name: "Semester 8" },
 ];
 
 // --- Subjects ---
