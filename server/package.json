@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "build": "prisma generate && tsc",
-    "dev": "npm run build && npm run start",
+    "dev": "npm run build && nodemon dist/index.js",
     "postinstall": "prisma generate"
   },
   "keywords": [],
