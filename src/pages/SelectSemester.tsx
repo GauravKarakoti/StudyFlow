@@ -1,59 +1,91 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link, useParams } from "react-router-dom";
-import { getSemesters, getBranch } from "@/lib/data";
-import Header from "@/components/Header";
-import { ChevronRight } from "lucide-react";
+import Header from "@/components/Header"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Link, useParams } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useMemo } from "react" // Import useMemo
+
+type Semester = {
+  id: string
+  name: string
+}
+
+const fetchSemesters = async (): Promise<Semester[]> => {
+  const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/semesters`)
+  return data
+}
 
 const SelectSemester = () => {
-  const { courseId, branchId } = useParams<{ courseId: string; branchId: string }>();
-  const branch = getBranch(branchId!);
-  const allSemesters = getSemesters();
+  const { courseId, branchId } =
+    useParams<{ courseId: string; branchId: string }>()
 
-  // Filter semesters based on the branchId
-  const semesters = allSemesters.filter(semester => {
-    if (branchId === "as") {
-      // For Applied Science, only show Sem 1 and 2
-      return semester.id === "sem1" || semester.id === "sem2";
-    } else {
-      // For all other branches, show Sem 3-7
-      return !["sem1", "sem2"].includes(semester.id);
+  const {
+    data: semesters,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["semesters"],
+    queryFn: fetchSemesters,
+  })
+
+  // NEW: Filter semesters based on branchId
+  const filteredSemesters = useMemo(() => {
+    if (!semesters) {
+      return []
     }
-  });
+    
+    // If branch is 'as', only show sem1 and sem2
+    if (branchId === 'as') {
+      return semesters.filter(s => s.id === 'sem1' || s.id === 'sem2')
+    }
+    
+    // For all other branches, show sem3 to sem7
+    return semesters.filter(s => s.id !== 'sem1' && s.id !== 'sem2')
+  }, [semesters, branchId]) // Re-filter when semesters or branchId changes
 
   return (
     <div className="min-h-screen relative pt-16">
       <Header />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="cosmic-card border-cosmic-accent/20">
-          <CardHeader>
-            <CardTitle className="text-2xl text-cosmic-glow text-center">
-              {branch?.name || "Select Semester"}
-            </CardTitle>
-            <p className="text-center text-muted-foreground">
-              Choose Your Semester
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {semesters.map((semester) => (
-              <Button
-                key={semester.id}
-                asChild
-                variant="outline"
-                className="w-full justify-between h-14 text-lg hover-glow"
-                size="lg"
-              >
-                <Link to={`/dashboard/${courseId}/${branchId}/${semester.id}`}>
-                  {semester.name}
-                  <ChevronRight className="w-5 h-5" />
-                </Link>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold">Select Your Semester</h1>
+          <p className="text-muted-foreground">
+            Almost there. Choose your current semester.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {isLoading && (
+            <>
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+            </>
+          )}
+          {isError && <p>Error loading semesters.</p>}
+          
+          {/* UPDATED: Map over filteredSemesters instead of semesters */}
+          {filteredSemesters?.map((semester) => (
+            <Link
+              to={`/dashboard/${courseId}/${branchId}/${semester.id}`}
+              key={semester.id}
+            >
+              <Card className="cosmic-card hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle>{semester.name}</CardTitle>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SelectSemester;
+export default SelectSemester

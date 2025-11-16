@@ -1,11 +1,29 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { Button } from "../ui/button"
+
+type Topic = {
+  id: string
+  name: string
+}
+
+const fetchTopics = async (subjectId: string): Promise<Topic[]> => {
+  const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/topics/${subjectId}`)
+  console.log("Fetched topics data:", data,subjectId)
+  return data
+}
 
 interface TopicListProps {
-  subjectId: string | null;
-  activeTopicId: string | null;
-  onTopicSelect: (id: string) => void;
+  subjectId: string | null
+  activeTopicId: string | null
+  onTopicSelect: (id: string) => void
 }
 
 const TopicList = ({
@@ -13,57 +31,55 @@ const TopicList = ({
   activeTopicId,
   onTopicSelect,
 }: TopicListProps) => {
-  if (!subjectId) {
-    return (
-      <Card className="cosmic-card border-cosmic-accent/20">
-        <CardHeader>
-          <CardTitle className="text-lg text-cosmic-glow">Topics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-4">
-            Please select a subject to see its topics.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const topics = [];
+  const {
+    data: topics,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["topics", subjectId],
+    queryFn: () => fetchTopics(subjectId!),
+    enabled: !!subjectId, // Only run if a subject is selected
+  })
+  console.log("Topics:", topics)
 
   return (
-    <Card className="cosmic-card border-cosmic-accent/20">
+    <Card className="cosmic-card">
       <CardHeader>
-        <CardTitle className="text-lg text-cosmic-glow">Topics</CardTitle>
+        <CardTitle>Topics</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {topics.length === 0 ? (
-          <p className="text-muted-foreground text-sm p-4 text-center">
+      <CardContent>
+        {!subjectId ? (
+          <p className="text-muted-foreground">
+            Please select a subject to see its topics.
+          </p>
+        ) : isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ) : isError ? (
+          <p>Error loading topics.</p>
+        ) : topics && topics.length > 0 ? (
+          <div className="flex flex-col space-y-1">
+            {topics.map((topic) => (
+              <Button
+                key={topic.id}
+                variant={activeTopicId === topic.id ? "secondary" : "ghost"}
+                className="justify-start"
+                onClick={() => onTopicSelect(topic.id)}
+              >
+                {topic.name}
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">
             No topics found for this subject.
           </p>
-        ) : (
-          topics.map((topic) => {
-            const Icon = FileText; // You can customize this later
-            return (
-              <button
-                key={topic.id}
-                onClick={() => onTopicSelect(topic.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left",
-                  "hover-glow",
-                  activeTopicId === topic.id
-                    ? "bg-primary/20 text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{topic.name}</span>
-              </button>
-            );
-          })
         )}
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TopicList;
+export default TopicList

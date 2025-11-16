@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String // Hashed password
+  role      Role     @default(USER)
+  notes     Note[]
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Course {
+  id       String   @id // REMOVED @default(cuid())
+  name     String
+  branches Branch[]
+}
+
+model Branch {
+  id       String   @id // REMOVED @default(cuid())
+  name     String
+  course   Course   @relation(fields: [courseId], references: [id])
+  courseId String
+  subjects Subject[]
+}
+
+model Semester {
+  id       String   @id // REMOVED @default(cuid())
+  name     String
+  subjects Subject[]
+}
+
+model Subject {
+  id         String   @id // REMOVED @default(cuid())
+  name       String
+  branch     Branch   @relation(fields: [branchId], references: [id])
+  branchId   String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+  semesterId String
+  topics     Topic[]
+
+  @@unique([branchId, semesterId, name])
+}
+
+model Topic {
+  id        String   @id @default(cuid()) // Topics can still be auto-generated
+  name      String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  notes     Note[]
+}
+
+model Note {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String   @db.Text
+  topic      Topic    @relation(fields: [topicId], references: [id])
+  topicId    String
+  uploader   User     @relation(fields: [uploaderId], references: [id])
+  uploaderId Int
+  createdAt  DateTime @default(now())
+}

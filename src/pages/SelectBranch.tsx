@@ -1,48 +1,73 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link, useParams } from "react-router-dom";
-import { getBranches, getCourse } from "@/lib/data";
-import Header from "@/components/Header";
-import { ChevronRight } from "lucide-react";
+import Header from "@/components/Header"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Link, useParams } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { Skeleton } from "@/components/ui/skeleton"
+
+type Branch = {
+  id: string
+  name: string
+  courseId: string
+}
+
+const fetchBranches = async (courseId: string): Promise<Branch[]> => {
+  const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/branches/${courseId}`)
+  return data
+}
 
 const SelectBranch = () => {
-  const { courseId } = useParams<{ courseId: string }>();
-  const course = getCourse(courseId!);
-  const branches = getBranches(courseId!);
+  const { courseId } = useParams<{ courseId: string }>()
+
+  const {
+    data: branches,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["branches", courseId],
+    queryFn: () => fetchBranches(courseId!),
+    enabled: !!courseId, // Only run query if courseId is present
+  })
 
   return (
     <div className="min-h-screen relative pt-16">
       <Header />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card className="cosmic-card border-cosmic-accent/20">
-          <CardHeader>
-            <CardTitle className="text-2xl text-cosmic-glow text-center">
-              {course?.name || "Select Branch"}
-            </CardTitle>
-            <p className="text-center text-muted-foreground">
-              Choose Your Branch
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {branches.map((branch) => (
-              <Button
-                key={branch.id}
-                asChild
-                variant="outline"
-                className="w-full justify-between h-14 text-lg hover-glow"
-                size="lg"
-              >
-                <Link to={`/select-semester/${courseId}/${branch.id}`}>
-                  {branch.name}
-                  <ChevronRight className="w-5 h-5" />
-                </Link>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold">Select Your Branch</h1>
+          <p className="text-muted-foreground">
+            Choose your specialization.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoading && (
+            <>
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-32" />
+            </>
+          )}
+          {isError && <p>Error loading branches.</p>}
+          {branches?.map((branch) => (
+            <Link
+              to={`/select-semester/${courseId}/${branch.id}`}
+              key={branch.id}
+            >
+              <Card className="cosmic-card hover:scale-105 transition-transform">
+                <CardHeader>
+                  <CardTitle>{branch.name}</CardTitle>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SelectBranch;
+export default SelectBranch

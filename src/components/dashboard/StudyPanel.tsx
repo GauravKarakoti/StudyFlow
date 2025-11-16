@@ -1,55 +1,83 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookMarked, Share2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { Separator } from "@/components/ui/separator"
+// You'll want a markdown renderer
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+
+type Note = {
+  id: number
+  title: string
+  content: string
+}
+
+const fetchNotes = async (topicId: string): Promise<Note[]> => {
+  const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/notes/${topicId}`)
+  return data
+}
 
 interface StudyPanelProps {
-  topicId: string | null;
+  topicId: string | null
 }
 
 const StudyPanel = ({ topicId }: StudyPanelProps) => {
-  if (!topicId) {
-    return (
-      <div className="space-y-6">
-        <Card className="cosmic-card border-cosmic-accent/20">
-          <CardHeader>
-            <CardTitle className="text-lg text-cosmic-glow flex items-center gap-2">
-              <BookMarked className="w-5 h-5" />
-              Select a Topic
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-center py-10">
-              Please select a topic from the list to view the notes.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  const note = [];
+  const {
+    data: notes,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["notes", topicId],
+    queryFn: () => fetchNotes(topicId!),
+    enabled: !!topicId, // Only run if a topic is selected
+  })
 
   return (
-    <div className="space-y-6">
-      <Card className="cosmic-card border-cosmic-accent/20">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-lg text-cosmic-glow flex items-center gap-2">
-            <BookMarked className="w-5 h-5" />
-            {/* {note.title} */}
-            Title
-          </CardTitle>
-          <Share2 className="w-4 h-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div
-            className="prose prose-invert prose-sm max-w-none no-download"
-            // dangerouslySetInnerHTML={{ __html: note.content }}
-            dangerouslySetInnerHTML={{ __html: '' }}
-            onContextMenu={(e) => e.preventDefault()}
-          />
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+    <Card className="cosmic-card h-full sticky top-20">
+      <CardHeader>
+        <CardTitle>Study Notes</CardTitle>
+      </CardHeader>
+      <CardContent className="h-[70vh] overflow-y-auto">
+        {!topicId ? (
+          <p className="text-muted-foreground">
+            Select a topic to start studying.
+          </p>
+        ) : isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        ) : isError ? (
+          <p>Error loading notes.</p>
+        ) : notes && notes.length > 0 ? (
+          <div className="space-y-6">
+            {notes.map((note) => (
+              <article key={note.id} className="prose dark:prose-invert max-w-none">
+                <h2>{note.title}</h2>
+                <Separator />
+                {/* Render markdown content */}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {note.content}
+                </ReactMarkdown>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">
+            No notes have been uploaded for this topic yet.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
-export default StudyPanel;
+export default StudyPanel
