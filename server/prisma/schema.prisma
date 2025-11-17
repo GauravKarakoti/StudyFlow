@@ -64,7 +64,7 @@ model Topic {
 model Note {
   id         Int      @id @default(autoincrement())
   title      String
-  content    String   @db.Text
+  pdfUrl     String   
   topic      Topic    @relation(fields: [topicId], references: [id])
   topicId    String
   uploader   User     @relation(fields: [uploaderId], references: [id])
