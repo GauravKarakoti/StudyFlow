@@ -137,7 +137,7 @@ All colors MUST be HSL.
   }
   
   .text-glow {
-    text-shadow: 0 0 20px hsl(320 50% 92% / 0.5);
+    text-shadow: 0 0 20px hsla(320, 51%, 92%, 0.092);
   }
   
   .hover-glow {
