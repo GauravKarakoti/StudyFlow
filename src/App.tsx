@@ -9,12 +9,10 @@ import NotFound from "./pages/NotFound"
 import SelectCourse from "./pages/SelectCourse"
 import SelectBranch from "./pages/SelectBranch"
 import SelectSemester from "./pages/SelectSemester"
-
-// Import new components
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import AdminDashboard from "./pages/AdminDashboard"
-import Settings from "./pages/Settings" // Import Settings
+import Settings from "./pages/Settings"
 import ProtectedRoute from "./components/ProtectedRoute"
 import AdminRoute from "./components/AdminRoute"
 

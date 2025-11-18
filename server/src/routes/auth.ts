@@ -45,8 +45,8 @@ router.post('/signup', async (req, res) => {
         id: user.id,
         email: user.email,
         role: user.role,
-        name: user.name,           // <--- ADD THIS
-        avatarUrl: user.avatarUrl, // <--- ADD THIS
+        name: user.name,          
+        avatarUrl: user.avatarUrl,
       },
     })
 
@@ -86,8 +86,8 @@ router.post('/login', async (req, res) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      name: user.name,           // <--- ADD THIS
-      avatarUrl: user.avatarUrl, // <--- ADD THIS
+      name: user.name,          
+      avatarUrl: user.avatarUrl,
     },
   })
 })
