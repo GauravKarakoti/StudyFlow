@@ -49,7 +49,7 @@ const Settings = () => {
   const handleSaveProfile = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/api/user/profile", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ const Settings = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/api/user/avatar", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/avatar`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -109,7 +109,7 @@ const Settings = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3001/api/user/password", {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -133,7 +133,7 @@ const Settings = () => {
 
   // Determine which avatar source to show (Uploaded > DiceBear Fallback)
   const displayAvatar = user?.avatarUrl 
-    ? `http://localhost:3001${user.avatarUrl}` 
+    ? `${import.meta.env.VITE_BACKEND_URL}${user.avatarUrl}` 
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`;
 
   return (
