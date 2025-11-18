@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { Separator } from "@/components/ui/separator"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react" // Added useEffect, useRef
 import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
 import { Document, Page, pdfjs } from "react-pdf"
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -10,11 +10,10 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-// --- Updated Note type ---
 type Note = {
   id: number
   title: string
-  pdfUrl: string // The new field
+  pdfUrl: string
 }
 
 const fetchNotes = async (topicId: string): Promise<Note[]> => {
@@ -26,10 +25,12 @@ interface NoteViewerProps {
   topicId: string | null
 }
 
-// +++ Helper component for a single PDF viewer +++
 const PdfViewer = ({ title, url }: { title: string; url: string }) => {
   const [numPages, setNumPages] = useState<number | null>(null)
   const [isError, setIsError] = useState(false)
+  // State to track container width
+  const [containerWidth, setContainerWidth] = useState<number>(0)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages)
@@ -41,18 +42,32 @@ const PdfViewer = ({ title, url }: { title: string; url: string }) => {
     setIsError(true)
   }
 
-  // Construct the full URL to the PDF file on the backend
+  // Effect to handle resizing
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        // Subtracting a small amount (e.g., 32px for padding) ensures it doesn't touch edges
+        setContainerWidth(containerRef.current.offsetWidth)
+      }
+    }
+
+    // Initial measure
+    updateWidth()
+    
+    // Add resize listener
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
   const fullPdfUrl = `${import.meta.env.VITE_BACKEND_URL}${url}`
-  console.log("Loading PDF from URL:", fullPdfUrl)
 
   return (
-    <article className="prose dark:prose-invert max-w-none">
+    <article className="prose dark:prose-invert max-w-none" ref={containerRef}>
       <h2>{title}</h2>
       <Separator />
       {isError ? (
         <p className="text-red-500">Failed to load this PDF.</p>
       ) : (
-        // This div disables right-click to discourage downloading
         <div onContextMenu={(e) => e.preventDefault()}>
           <Document
             file={fullPdfUrl}
@@ -61,13 +76,14 @@ const PdfViewer = ({ title, url }: { title: string; url: string }) => {
             renderMode="canvas"
             loading={<Skeleton className="h-48 w-full" />}
           >
-            {/* Render all pages of the PDF */}
             {Array.from(new Array(numPages), (el, index) => (
               <Page
                 key={`page_${index + 1}`}
                 pageNumber={index + 1}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
+                // Pass the calculated width to resize the page
+                width={containerWidth > 0 ? containerWidth : undefined}
               />
             ))}
           </Document>
@@ -85,7 +101,7 @@ const NoteViewer = ({ topicId }: NoteViewerProps) => {
   } = useQuery({
     queryKey: ["notes", topicId],
     queryFn: () => fetchNotes(topicId!),
-    enabled: !!topicId, // Only run if a topic is selected
+    enabled: !!topicId,
   })
 
   if (!topicId) {

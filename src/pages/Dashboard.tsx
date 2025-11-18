@@ -3,7 +3,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import NotebookCard from "@/components/dashboard/NotebookCard";
 import TopicList from "@/components/dashboard/TopicList";
 import { useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react"; // Added useRef
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import NoteViewer from "@/components/dashboard/NoteViewer"; // Import the new component
+import NoteViewer from "@/components/dashboard/NoteViewer";
 
 const Dashboard = () => {
   const { courseId, branchId, semesterId } = useParams<{
@@ -21,7 +21,10 @@ const Dashboard = () => {
   }>();
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-  const [isNoteViewerOpen, setIsNoteViewerOpen] = useState(false); // State for dialog
+  const [isNoteViewerOpen, setIsNoteViewerOpen] = useState(false);
+
+  // Ref for the TopicList section
+  const topicListRef = useRef<HTMLDivElement>(null);
 
   if (!courseId || !branchId || !semesterId) {
     return (
@@ -49,46 +52,53 @@ const Dashboard = () => {
               activeSubjectId={selectedSubjectId}
               onSubjectSelect={(id) => {
                 setSelectedSubjectId(id);
-                setSelectedTopicId(null); // Reset topic
-                setIsNoteViewerOpen(false); // Close dialog if subject changes
+                setSelectedTopicId(null); 
+                setIsNoteViewerOpen(false);
+                
+                // Auto-scroll to topic list on mobile
+                setTimeout(() => {
+                  topicListRef.current?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }, 100);
               }}
             />
           </div>
 
-          {/* Main Content - now wider */}
+          {/* Main Content */}
           <div className="lg:col-span-9 space-y-6">
             <NotebookCard
               courseId={courseId}
               branchId={branchId}
               semesterId={semesterId}
             />
-            <TopicList
-              subjectId={selectedSubjectId}
-              activeTopicId={selectedTopicId}
-              onTopicSelect={(id) => {
-                setSelectedTopicId(id);
-                setIsNoteViewerOpen(true); // Open the dialog
-              }}
-            />
+            {/* Attach Ref here */}
+            <div ref={topicListRef} className="scroll-mt-24">
+              <TopicList
+                subjectId={selectedSubjectId}
+                activeTopicId={selectedTopicId}
+                onTopicSelect={(id) => {
+                  setSelectedTopicId(id);
+                  setIsNoteViewerOpen(true);
+                }}
+              />
+            </div>
           </div>
-
-          {/* Right Panel - Removed */}
         </div>
 
-        {/* --- PDF Viewer Dialog --- */}
+        {/* PDF Viewer Dialog */}
         <Dialog open={isNoteViewerOpen} onOpenChange={setIsNoteViewerOpen}>
           <DialogContent
             className="max-w-4xl h-[90vh] flex flex-col"
             onPointerDownOutside={(e) => {
-              e.preventDefault(); // Prevent closing on outside click
+              e.preventDefault();
             }}
           >
             <DialogHeader>
               <DialogTitle>Study Notes</DialogTitle>
-              {/* The "X" close button is part of DialogContent */}
             </DialogHeader>
             <div className="flex-1 overflow-y-auto pr-4">
-              {/* Render NoteViewer only when a topic is selected */}
               {selectedTopicId && <NoteViewer topicId={selectedTopicId} />}
             </div>
           </DialogContent>

@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { Button } from "../ui/button"
+import { FileText } from "lucide-react" // Import Icon
 
 type Topic = {
   id: string
@@ -16,7 +17,7 @@ type Topic = {
 
 const fetchTopics = async (subjectId: string): Promise<Topic[]> => {
   const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/topics/${subjectId}`)
-  console.log("Fetched topics data:", data,subjectId)
+  console.log("Fetched topics data:", data, subjectId)
   return data
 }
 
@@ -38,9 +39,8 @@ const TopicList = ({
   } = useQuery({
     queryKey: ["topics", subjectId],
     queryFn: () => fetchTopics(subjectId!),
-    enabled: !!subjectId, // Only run if a subject is selected
+    enabled: !!subjectId, 
   })
-  console.log("Topics:", topics)
 
   return (
     <Card className="cosmic-card">
@@ -68,6 +68,8 @@ const TopicList = ({
                 className="justify-start"
                 onClick={() => onTopicSelect(topic.id)}
               >
+                {/* Render Icon */}
+                <FileText className="mr-2 h-4 w-4" />
                 {topic.name}
               </Button>
             ))}

@@ -16,7 +16,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8 animate-fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+            <h1 className="pt-6 lg:pt-0 text-5xl md:text-7xl font-bold leading-tight">
               Organize Your Learning,{" "}
               <span className="text-glow bg-gradient-to-r from-primary via-secondary to-cosmic-glow bg-clip-text text-transparent">
                 Unlock Your Potential
