@@ -33,11 +33,11 @@ router.get('/subjects/:branchId/:semesterId', async (req, res) => {
   res.json(subjects)
 })
 
-// Get topics for a subject
 router.get('/topics/:subjectId', async (req, res) => {
   const { subjectId } = req.params
   const topics = await prisma.topic.findMany({
     where: { subjectId },
+    orderBy: { name: 'asc' } // Added ordering here
   })
   res.json(topics)
 })

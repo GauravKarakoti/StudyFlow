@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, Sun, Moon, Youtube } from "lucide-react";
+import { Settings, LogOut, Sun, Moon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const Header = () => {
@@ -18,15 +18,29 @@ const Header = () => {
   const navigate = useNavigate();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
 
-  // Initialize theme based on current document class
+  // Initialize theme from localStorage or default to dark
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
+    const storedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    // Default to dark if no preference stored
+    const initialTheme = storedTheme || "dark"; 
+
+    setTheme(initialTheme);
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
+    
+    // Persist to localStorage
+    localStorage.setItem("theme", newTheme); 
+
     if (newTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {

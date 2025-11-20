@@ -42,6 +42,12 @@ const TopicList = ({
     enabled: !!subjectId, 
   })
 
+  // --- ADDED: Sorting Logic ---
+  // Create a sorted copy of the topics array
+  const sortedTopics = topics 
+    ? [...topics].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+    : [];
+
   return (
     <Card className="cosmic-card">
       <CardHeader>
@@ -59,9 +65,9 @@ const TopicList = ({
           </div>
         ) : isError ? (
           <p>Error loading topics.</p>
-        ) : topics && topics.length > 0 ? (
+        ) : sortedTopics.length > 0 ? ( // Use sortedTopics here
           <div className="flex flex-col space-y-1">
-            {topics.map((topic) => (
+            {sortedTopics.map((topic) => ( // Map over sortedTopics
               <Button
                 key={topic.id}
                 variant={activeTopicId === topic.id ? "secondary" : "ghost"}

@@ -3,8 +3,21 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import prisma from '../db.js'
 import { Role } from '@prisma/client'
+import { generateSignedUrl } from '../lib/s3Utils.js' //
 
 const router = Router()
+
+// Helper to sign avatar URL
+async function signUserAvatar(user: any) {
+  if (user?.avatarUrl && process.env.B2_BUCKET_NAME) {
+    try {
+      user.avatarUrl = await generateSignedUrl(user.avatarUrl, process.env.B2_BUCKET_NAME);
+    } catch (error) {
+      console.error("Error signing avatar URL:", error);
+    }
+  }
+  return user;
+}
 
 // NEW: Public signup route
 router.post('/signup', async (req, res) => {
@@ -14,7 +27,6 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ message: 'Email and password required' })
   }
 
-  // Add more validation (e.g., password length) here
   if (password.length < 8) {
     return res.status(400).json({ message: 'Password must be at least 8 characters' })
   }
@@ -22,36 +34,37 @@ router.post('/signup', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10)
     
-    // Create the user with the USER role
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
-        role: Role.USER, // Default role for public signup
+        role: Role.USER,
       },
     })
 
-    // Issue JWT to log them in immediately
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET!,
       { expiresIn: '1d' }
     )
 
+    // Sign the user object before sending
+    const userWithSignedAvatar = await signUserAvatar({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,          
+      avatarUrl: user.avatarUrl,
+    });
+
     res.status(201).json({
       message: 'Signup successful',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,          
-        avatarUrl: user.avatarUrl,
-      },
+      user: userWithSignedAvatar,
     })
 
   } catch (error: any) {
-    if (error.code === 'P2002') { // Prisma unique constraint violation
+    if (error.code === 'P2002') {
       return res.status(400).json({ message: 'An account with this email already exists' })
     }
     res.status(500).json({ message: 'Error creating user', error: error.message })
@@ -72,23 +85,25 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials' })
   }
 
-  // Issue JWT
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET!,
     { expiresIn: '1d' }
   )
 
+  // Sign the user object before sending
+  const userWithSignedAvatar = await signUserAvatar({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    name: user.name,          
+    avatarUrl: user.avatarUrl,
+  });
+
   res.json({
     message: 'Login successful',
     token,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,          
-      avatarUrl: user.avatarUrl,
-    },
+    user: userWithSignedAvatar,
   })
 })
 
