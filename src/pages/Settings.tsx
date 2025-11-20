@@ -138,22 +138,13 @@ const Settings = () => {
   return (
     <div className="container max-w-4xl py-10 px-4 mx-auto animate-accordion-down">
       <div className="flex items-center gap-4 mb-8">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => navigate("/")}
-          className="rounded-full hover:bg-primary/20"
-        >
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
         <h1 className="text-3xl font-bold text-glow">Settings</h1>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -262,35 +253,6 @@ const Settings = () => {
                   {isLoading ? "Updating..." : "Update Password"}
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Appearance Tab */}
-        <TabsContent value="appearance">
-          <Card className="cosmic-card">
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>
-                Customize the look and feel of the application.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border p-4 bg-background/50">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                    <Label className="text-base">Dark Mode</Label>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Toggle the cosmic dark theme on or off.
-                  </p>
-                </div>
-                <Switch
-                  checked={isDark}
-                  onCheckedChange={handleThemeToggle}
-                />
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

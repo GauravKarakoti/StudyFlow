@@ -124,9 +124,14 @@ const Footer = () => {
             </a>
           </div>
         </div>
-        
-        <div className="text-center py-4 text-gray-500 text-sm">
-          © 2025 • Created by <a href="https://github.com/GauravKarakoti" className="font-semibold text-white-700">Gaurav Karakoti</a>
+        <div className="text-center py-1 text-gray-500 text-sm">
+          © 2025 Studyflow | Powered by <a href="https://github.com/abhaykanojia16" className="font-semibold text-white-700">Freakooh</a>
+        </div>
+        <div className="text-center py-1 text-gray-500 text-sm">
+          Created by <a href="https://github.com/GauravKarakoti" className="font-semibold text-white-700">Gaurav Karakoti</a>
+        </div>
+        <div className="text-center py-1 text-gray-500 text-sm">
+          All Rights Reserved.
         </div>
       </div>
     </footer>

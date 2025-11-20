@@ -18,14 +18,19 @@ const Hero = () => {
           <div className="space-y-8 animate-fade-in">
             <h1 className="pt-6 lg:pt-0 text-5xl md:text-7xl font-bold leading-tight">
               Organize Your Learning,{" "}
-              <span className="text-glow bg-gradient-to-r from-primary via-secondary to-cosmic-glow bg-clip-text text-transparent">
+              <span className="text-glow bg-gradient-to-r 
+                from-[hsl(var(--gradient-start))]
+                via-[hsl(var(--gradient-mid))]
+                to-[hsl(var(--gradient-end))]
+                bg-clip-text text-transparent"
+              >
                 Unlock Your Potential
               </span>
             </h1>
             
             <p className="text-xl text-foreground/80 max-w-lg">
-              Seamlessly create, manage, and review your study materials. 
-              Transform the way you learn with AI-powered tools.
+              Your syllabus, sorted. Your prep, powered. <br/>
+              Just click ‘Start Taking Notes Free’ and begin the glow-up.
             </p>
             
             <Link to="/select-course">

@@ -41,11 +41,18 @@ All colors MUST be HSL.
     --ring: 280 60% 50%;
 
     --radius: 1rem;
+
+    --gradient-start: 280 60% 40%;
+    --gradient-mid: 280 30% 55%;
+    --gradient-end: 280 50% 45%;
     
     /* Cosmic tokens adapted for light mode */
     --cosmic-glow: 280 60% 50%; 
     --cosmic-deep: 280 50% 95%;
     --cosmic-mid: 0 0% 100%;
+
+    --glow-strength: 0.08; /* reduced from 0.2 */
+    --glow-shadow: 20px;
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -80,9 +87,16 @@ All colors MUST be HSL.
     --input: 285 50% 20%;
     --ring: 240 40% 53%;
 
+    --gradient-start: var(--primary);
+    --gradient-mid: var(--secondary);
+    --gradient-end: var(--cosmic-glow);
+
     --cosmic-glow: 320 50% 92%;
     --cosmic-deep: 280 72% 11%;
     --cosmic-mid: 285 62% 16%;
+
+    --glow-strength: 0.25;
+    --glow-shadow: 40px;
   }
 }
 
@@ -101,8 +115,9 @@ All colors MUST be HSL.
 
 @layer utilities {
   .cosmic-glow {
-    /* [!code change] Switched to variables: uses --cosmic-glow and --primary */
-    box-shadow: 0 0 30px hsl(var(--cosmic-glow) / 0.2), 0 0 60px hsl(var(--primary) / 0.15);
+  box-shadow: 
+    0 0 var(--glow-shadow) hsl(var(--cosmic-glow) / var(--glow-strength)),
+    0 0 calc(var(--glow-shadow) * 2) hsl(var(--primary) / calc(var(--glow-strength) - 0.02));
   }
 
   .prose {
