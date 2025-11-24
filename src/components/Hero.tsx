@@ -28,7 +28,7 @@ const Hero = () => {
               </span>
             </h1>
             
-            <p className="text-xl text-foreground/80 max-w-lg">
+            <p className="text-lg md:text-xl text-foreground/80 max-w-lg">
               Your syllabus, sorted. Your prep, powered. <br/>
               Just click ‘Start Taking Notes Free’ and begin the glow-up.
             </p>

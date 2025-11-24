@@ -12,6 +12,11 @@ const Footer = () => {
   return (
     <footer className="border-t border-border/50 py-12">
       <div className="container mx-auto px-4">
+        {/* Disclaimer Section */}
+        <div className="mb-8 text-center text-sm text-white px-4">
+          <p>Disclaimer: All the books and study resources hosted on StudyFlow are provided for informational and educational purposes only. We do not claim ownership of any of the resources available on the website.</p>
+        </div>
+
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Updated Links Section */}
           <div className="flex gap-6 text-sm text-foreground/60 items-center">

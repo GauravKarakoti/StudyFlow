@@ -18,6 +18,7 @@ const Signup = () => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const auth = useAuth()
   const navigate = useNavigate()
 
@@ -30,6 +31,8 @@ const Signup = () => {
       return
     }
 
+    setIsLoading(true)
+
     try {
       const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`, {
         email,
@@ -38,6 +41,7 @@ const Signup = () => {
       auth.login(response.data.token, response.data.user)
       navigate('/select-course') // Navigate to dashboard after signup
     } catch (err: any) {
+      setIsLoading(false)
       if (err.response?.data?.message) {
         setError(err.response.data.message)
       } else {
@@ -91,7 +95,7 @@ const Signup = () => {
               />
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" isLoading={isLoading}>
               Create Account
             </Button>
           </form>
