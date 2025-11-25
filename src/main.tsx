@@ -7,7 +7,7 @@ import { AuthProvider } from "./hooks/useAuth.tsx"
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID_FROM_CONSOLE"> {/* [!code ++] */}
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}> {/* [!code ++] */}
         <AuthProvider>
             <App />
         </AuthProvider>
