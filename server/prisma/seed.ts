@@ -141,6 +141,16 @@ const subjects = [
 { id: "cse710", name: "Intelligent Expert Systems Lab", branch: "cse", semester: "sem7" },
 { id: "cse711", name: "Supervised and Deep Learning", branch: "cse", semester: "sem7" },
 { id: "cse712", name: "Principles of Entrepreneurship Mindset", branch: "cse", semester: "sem7" },
+{ id: "it301", name: "Discrete Maths", branch: "it", semester: "sem3" },
+{ id: "it302", name: "Computational Methods", branch: "it", semester: "sem3" },
+{ id: "it303", name: "Data Structure", branch: "it", semester: "sem3" },
+{ id: "it304", name: "Digital Logic and Computer Design", branch: "it", semester: "sem3" },
+{ id: "it305", name: "Indian Knowledge System", branch: "it", semester: "sem3" },
+{ id: "it306", name: "Object Oriented Programming using C++", branch: "it", semester: "sem3" },
+{ id: "it307", name: "Computational Methods Lab", branch: "it", semester: "sem3" },
+{ id: "it308", name: "Data Structure Lab", branch: "it", semester: "sem3" },
+{ id: "it309", name: "Digital Logic and Computer Design Lab", branch: "it", semester: "sem3" },
+{ id: "it310", name: "Object Oriented Programming using C++ Lab", branch: "it", semester: "sem3" }
 ];
 
 async function main() {
