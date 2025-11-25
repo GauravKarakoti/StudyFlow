@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
 import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../db.js';
 import { broadcastNotification } from './notification.js';
 import 'dotenv/config'
 
@@ -10,7 +10,6 @@ const parser = new Parser({
     item: [['media:group', 'mediaGroup']],
   },
 });
-const prisma = new PrismaClient();
 
 const CHANNEL_ID = process.env.CHANNEL_ID; 
 
