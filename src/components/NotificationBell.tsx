@@ -27,7 +27,7 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:3001/api/notifications", {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data);
@@ -49,7 +49,7 @@ export function NotificationBell() {
   const markAsRead = async (id: number) => {
     try {
       await axios.put(
-        `http://localhost:3001/api/notifications/${id}/read`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/notifications/${id}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
