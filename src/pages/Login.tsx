@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import axios from 'axios'
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -43,6 +44,23 @@ const Login = () => {
     }
   }
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
+        credential: credentialResponse.credential,
+      });
+      
+      auth.login(response.data.token, response.data.user);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError('Google Login failed. Please try again.');
+      console.error(err);
+    } finally {
+        setLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-sm">
@@ -50,7 +68,7 @@ const Login = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your email below or sign in with Google.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,6 +104,25 @@ const Login = () => {
               Login
             </Button>
           </form>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-center w-full">
+            <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google Login Failed')}
+                useOneTap
+            />
+          </div>
 
            {/* ... Footer Links ... */}
           <div className="mt-4 text-center text-sm">

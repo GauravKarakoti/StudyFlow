@@ -5,8 +5,10 @@ import prisma from '../db.js'
 import { Role } from '@prisma/client'
 import { generateSignedUrl } from '../lib/s3Utils.js' //
 import { sendNotification } from '../lib/notification.js'
+import { OAuth2Client } from 'google-auth-library'
 
 const router = Router()
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
 // Helper to sign avatar URL
 async function signUserAvatar(user: any) {
@@ -83,7 +85,7 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials' })
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password)
+  const isPasswordValid = await bcrypt.compare(password, user.password as string)
   if (!isPasswordValid) {
     return res.status(401).json({ message: 'Invalid credentials' })
   }
@@ -109,5 +111,74 @@ router.post('/login', async (req, res) => {
     user: userWithSignedAvatar,
   })
 })
+
+router.post('/google', async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    // 1. Verify Google Token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    
+    if (!payload || !payload.email) {
+      return res.status(400).json({ message: 'Invalid Google token' });
+    }
+
+    const { email, name, picture, sub: googleId } = payload;
+
+    // 2. Find or Create User
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          avatarUrl: picture, // Use Google profile picture
+          googleId,
+          role: Role.USER,
+          // No password needed
+        },
+      });
+      await sendNotification(user.id, `Welcome to StudyFlow, ${user.name || 'Student'}! 🚀`);
+    } else {
+        // Optional: Update avatar if it's currently null
+        if (!user.avatarUrl) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { avatarUrl: picture, googleId }
+            });
+        }
+    }
+
+    // 3. Generate JWT (Same as standard login)
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET!,
+      { expiresIn: '1d' }
+    );
+
+    const userWithSignedAvatar = await signUserAvatar({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      avatarUrl: user.avatarUrl,
+    });
+
+    res.json({
+      message: 'Google login successful',
+      token,
+      user: userWithSignedAvatar,
+    });
+
+  } catch (error: any) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({ message: 'Google authentication failed' });
+  }
+});
 
 export default router

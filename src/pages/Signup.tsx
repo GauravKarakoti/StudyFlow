@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { GoogleLogin } from '@react-oauth/google'; // [!code ++]
 import axios from 'axios'
 
 const Signup = () => {
@@ -21,6 +22,25 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false)
   const auth = useAuth()
   const navigate = useNavigate()
+
+  // [!code ++] Handle Google Sign-up Success
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
+    try {
+      // Calls the same endpoint as Login; backend handles "create if not exists"
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/google`, {
+        credential: credentialResponse.credential,
+      });
+      
+      auth.login(response.data.token, response.data.user);
+      navigate('/select-course');
+    } catch (err) {
+      console.error(err);
+      setError('Google Sign-up failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,7 +59,7 @@ const Signup = () => {
         password,
       })
       auth.login(response.data.token, response.data.user)
-      navigate('/select-course') // Navigate to dashboard after signup
+      navigate('/select-course') 
     } catch (err: any) {
       setIsLoading(false)
       if (err.response?.data?.message) {
@@ -95,10 +115,33 @@ const Signup = () => {
               />
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
+            
             <Button type="submit" className="w-full" isLoading={isLoading}>
               Create Account
             </Button>
           </form>
+
+          {/* [!code ++] Google Sign-up Section */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-center w-full">
+            <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google Sign-up Failed')}
+                text="signup_with" 
+                useOneTap
+            />
+          </div>
+          {/* [!code ++] End Google Section */}
 
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}

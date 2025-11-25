@@ -10,9 +10,10 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String   // Hashed password
-  name      String?  // Added: Display name
-  avatarUrl String?  // Added: URL to uploaded avatar
+  password  String?  // [!code change] Make password optional
+  name      String?
+  avatarUrl String?
+  googleId  String?  // [!code change] Optional: Add googleId to track google users explicitly
   role      Role     @default(USER)
   notes     Note[]
   createdAt DateTime @default(now())

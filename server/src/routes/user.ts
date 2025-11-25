@@ -121,7 +121,7 @@ router.put('/password', async (req: any, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isValid = await bcrypt.compare(currentPassword, user.password);
+    const isValid = await bcrypt.compare(currentPassword, user.password as string);
     if (!isValid) {
       return res.status(401).json({ message: "Incorrect current password" });
     }
