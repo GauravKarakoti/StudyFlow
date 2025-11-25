@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,9 +57,7 @@ const ForgotPassword = () => {
               </Button>
             </form>
           ) : (
-             <Button className="w-full" variant="outline" asChild>
-                <Link to="/login">Back to Login</Link>
-             </Button>
+            <div></div>
           )}
           <div className="mt-4 text-center text-sm">
             <Link to="/login" className="underline">Back to Login</Link>
