@@ -71,7 +71,6 @@ router.get('/lessons/:lessonId', async (req, res) => {
   }
 });
 
-// Submit Challenge Progress
 router.post('/progress', async (req, res) => {
   const { challengeId, isCorrect } = req.body;
   // @ts-ignore
@@ -88,20 +87,29 @@ router.post('/progress', async (req, res) => {
     }
 
     if (isCorrect) {
-      // Mark challenge as completed
+      // Check if already completed to prevent duplicate XP
+      const existingCompletion = await prisma.challengeProgress.findUnique({
+        where: { userId_challengeId: { userId, challengeId } }
+      });
+
+      // Mark challenge as completed (Upsert)
       await prisma.challengeProgress.upsert({
         where: { userId_challengeId: { userId, challengeId } },
         update: { completed: true },
         create: { userId, challengeId, completed: true }
       });
 
-      // Award XP
-      await prisma.userProgress.update({
-        where: { userId },
-        data: { points: { increment: 10 } }
-      });
+      // Award XP ONLY if it wasn't previously completed
+      let pointsAdded = 0;
+      if (!existingCompletion?.completed) {
+        await prisma.userProgress.update({
+          where: { userId },
+          data: { points: { increment: 10 } }
+        });
+        pointsAdded = 10;
+      }
       
-      res.json({ success: true, pointsAdded: 10 });
+      res.json({ success: true, pointsAdded });
     } else {
       // Deduct Hearts
       if (progress.hearts > 0) {

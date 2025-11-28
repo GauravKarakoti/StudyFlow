@@ -43,7 +43,7 @@ export default function ForumPage() {
         
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-cosmic-glow hover:bg-cosmic-mid text-white">
+            <Button className="bg-cosmic-glow hover:bg-cosmic-mid text-purple-600">
               <Plus className="w-4 h-4 mr-2" /> New Discussion
             </Button>
           </DialogTrigger>

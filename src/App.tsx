@@ -25,6 +25,7 @@ import LeaderboardPage from "./pages/Learn/LeaderboardPage";
 import ForumPage from "./pages/Learn/ForumPage";
 import LessonPage from "./pages/Learn/LessonPage";
 import ForumThreadPage from "./pages/Learn/ForumThreadPage";
+import { useEffect } from "react"; // Added useEffect import
 
 async function wakeup() {
   await axios.get(`${import.meta.env.VITE_BACKEND_URL}/`);
@@ -34,53 +35,66 @@ wakeup();
 
 const queryClient = new QueryClient()
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <GlobalNavigation />
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          
-          {/* Protected Routes (Logged-in users) */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/select-course" element={<SelectCourse />} />
-            <Route path="/select-branch/:courseId" element={<SelectBranch />} />
-            <Route
-              path="/select-semester/:courseId/:branchId"
-              element={<SelectSemester />}
-            />
-            <Route
-              path="/dashboard/:courseId/:branchId/:semesterId"
-              element={<Dashboard />}
-            />
-            <Route path="/dashboard" element={<SelectCourse />} />
-            <Route path="/settings" element={<Settings />} /> {/* Add Settings Route */}
-            <Route path="/learn" element={<LearnLayout><LearnMap /></LearnLayout>} />
-            <Route path="/learn/lesson/:lessonId" element={<LessonPage />} />
-            <Route path="/learn/leaderboard" element={<LearnLayout><LeaderboardPage /></LearnLayout>} />
-            <Route path="/learn/forum" element={<LearnLayout><ForumPage /></LearnLayout>} />
-            <Route path="/learn/forum/:threadId" element={<LearnLayout><ForumThreadPage /></LearnLayout>} />
-          </Route>
+const App = () => {
+  // Added global theme initialization
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    // Default to dark if no preference is stored or if it is 'dark'
+    if (!storedTheme || storedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
 
-          {/* Admin Routes (Admin users only) */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-          </Route>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <GlobalNavigation />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            
+            {/* Protected Routes (Logged-in users) */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/select-course" element={<SelectCourse />} />
+              <Route path="/select-branch/:courseId" element={<SelectBranch />} />
+              <Route
+                path="/select-semester/:courseId/:branchId"
+                element={<SelectSemester />}
+              />
+              <Route
+                path="/dashboard/:courseId/:branchId/:semesterId"
+                element={<Dashboard />}
+              />
+              <Route path="/dashboard" element={<SelectCourse />} />
+              <Route path="/settings" element={<Settings />} /> 
+              <Route path="/learn" element={<LearnLayout><LearnMap /></LearnLayout>} />
+              <Route path="/learn/lesson/:lessonId" element={<LessonPage />} />
+              <Route path="/learn/leaderboard" element={<LearnLayout><LeaderboardPage /></LearnLayout>} />
+              <Route path="/learn/forum" element={<LearnLayout><ForumPage /></LearnLayout>} />
+              <Route path="/learn/forum/:threadId" element={<LearnLayout><ForumThreadPage /></LearnLayout>} />
+            </Route>
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-)
+            {/* Admin Routes (Admin users only) */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+            </Route>
+
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  )
+}
 
 export default App

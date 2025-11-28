@@ -3,11 +3,13 @@ import prisma from '../db.js';
 
 const router = Router();
 
-// Get Threads
 router.get('/threads', async (req, res) => {
   const threads = await prisma.forumThread.findMany({
     orderBy: { updatedAt: 'desc' },
-    include: { author: { select: { name: true, avatarUrl: true } } }
+    include: { 
+      author: { select: { name: true, avatarUrl: true } },
+      posts: { select: { id: true } } // Include posts (ids only) so frontend can count them
+    }
   });
   res.json(threads);
 });
