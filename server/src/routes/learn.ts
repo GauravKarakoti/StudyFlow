@@ -6,8 +6,8 @@ const router = Router();
 // Get the Learning Map (Units > Lessons > Challenges)
 router.get('/courses/:courseId/units', async (req, res) => {
   const { courseId } = req.params;
-  // @ts-ignore - Assuming req.user is set by auth middleware
-  const userId = req.user.userId; 
+  // @ts-ignore
+  const userId = req.user.id; 
 
   try {
     const units = await prisma.unit.findMany({
@@ -59,7 +59,7 @@ router.get('/lessons/:lessonId', async (req, res) => {
             options: true,
             challengeProgress: {
               // @ts-ignore
-              where: { userId: req.user.userId }
+              where: { userId: req.user.id }
             }
           }
         }
@@ -75,7 +75,7 @@ router.get('/lessons/:lessonId', async (req, res) => {
 router.post('/progress', async (req, res) => {
   const { challengeId, isCorrect } = req.body;
   // @ts-ignore
-  const userId = req.user.userId;
+  const userId = req.user.id;
 
   try {
     let progress = await prisma.userProgress.findUnique({ where: { userId } });

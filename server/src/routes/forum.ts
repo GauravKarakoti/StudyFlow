@@ -16,7 +16,7 @@ router.get('/threads', async (req, res) => {
 router.post('/threads', async (req, res) => {
   const { title, body } = req.body;
   // @ts-ignore
-  const userId = req.user.userId;
+  const userId = req.user.id;
   
   const thread = await prisma.forumThread.create({
     data: { title, body, authorId: userId }
@@ -43,7 +43,7 @@ router.get('/threads/:id', async (req, res) => {
 router.post('/threads/:id/posts', async (req, res) => {
   const { body } = req.body;
   // @ts-ignore
-  const userId = req.user.userId;
+  const userId = req.user.id;
   
   const post = await prisma.forumPost.create({
     data: {
