@@ -3,6 +3,52 @@ import prisma from '../db.js';
 
 const router = Router();
 
+// [ADD THIS] Refill Logic Helper
+const HEART_REFILL_INTERVAL = 30 * 60 * 1000; // 30 Minutes per heart
+const MAX_HEARTS = 5;
+
+async function checkAndRefillHearts(userId: number) {
+  let progress = await prisma.userProgress.findUnique({ where: { userId } });
+
+  // Create progress if it doesn't exist
+  if (!progress) {
+    progress = await prisma.userProgress.create({
+      data: { userId, hearts: 5, points: 0, lastRefillAt: new Date() }
+    });
+  }
+
+  // Calculate Refill
+  if (progress.hearts < MAX_HEARTS) {
+    const now = new Date();
+    const timePassed = now.getTime() - new Date(progress.lastRefillAt).getTime();
+    
+    // Floor to see how many intervals have passed
+    const heartsToRecover = Math.floor(timePassed / HEART_REFILL_INTERVAL);
+
+    if (heartsToRecover > 0) {
+      const newHearts = Math.min(MAX_HEARTS, progress.hearts + heartsToRecover);
+      
+      // We don't just set 'now', we calculate the time used to recover 
+      // so the "remainder" time counts towards the next heart.
+      // E.g. if 40 mins passed, we use 30 mins for 1 heart, leaving 10 mins "banked".
+      const timeUsed = heartsToRecover * HEART_REFILL_INTERVAL;
+      // Prevent date overflow if fully healed (just set to now)
+      const newRefillDate = newHearts === MAX_HEARTS 
+        ? now 
+        : new Date(new Date(progress.lastRefillAt).getTime() + timeUsed);
+
+      progress = await prisma.userProgress.update({
+        where: { userId },
+        data: {
+          hearts: newHearts,
+          lastRefillAt: newRefillDate
+        }
+      });
+    }
+  }
+  return progress;
+}
+
 // Get the Learning Map (Units > Lessons > Challenges)
 router.get('/courses/:courseId/units', async (req, res) => {
   const { courseId } = req.params;
@@ -47,9 +93,15 @@ router.get('/courses/:courseId/units', async (req, res) => {
   }
 });
 
-// Get Challenge Data for a Lesson
 router.get('/lessons/:lessonId', async (req, res) => {
+  // @ts-ignore
+  const userId = req.user.id; // Ensure you have access to user ID here
+
   try {
+    // 1. Get User Progress (Handling Refills)
+    const userProgress = await checkAndRefillHearts(userId);
+
+    // 2. Fetch Lesson
     const lesson = await prisma.lesson.findUnique({
       where: { id: parseInt(req.params.lessonId) },
       include: {
@@ -58,48 +110,48 @@ router.get('/lessons/:lessonId', async (req, res) => {
           include: {
             options: true,
             challengeProgress: {
-              // @ts-ignore
-              where: { userId: req.user.id }
+              where: { userId }
             }
           }
         }
       }
     });
-    res.json(lesson);
+
+    if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
+
+    // 3. Return combined data
+    res.json({
+      lesson,
+      userHearts: userProgress.hearts
+    });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Lesson not found' });
   }
 });
 
+// [UPDATED] Handle Progress
 router.post('/progress', async (req, res) => {
   const { challengeId, isCorrect } = req.body;
   // @ts-ignore
   const userId = req.user.id;
 
   try {
-    let progress = await prisma.userProgress.findUnique({ where: { userId } });
-    
-    // Initialize progress if not exists
-    if (!progress) {
-      progress = await prisma.userProgress.create({
-        data: { userId, hearts: 5, points: 0 }
-      });
-    }
+    // 1. Check/Refill hearts before doing anything
+    const progress = await checkAndRefillHearts(userId);
 
     if (isCorrect) {
-      // Check if already completed to prevent duplicate XP
       const existingCompletion = await prisma.challengeProgress.findUnique({
         where: { userId_challengeId: { userId, challengeId } }
       });
 
-      // Mark challenge as completed (Upsert)
       await prisma.challengeProgress.upsert({
         where: { userId_challengeId: { userId, challengeId } },
         update: { completed: true },
         create: { userId, challengeId, completed: true }
       });
 
-      // Award XP ONLY if it wasn't previously completed
       let pointsAdded = 0;
       if (!existingCompletion?.completed) {
         await prisma.userProgress.update({
@@ -109,13 +161,17 @@ router.post('/progress', async (req, res) => {
         pointsAdded = 10;
       }
       
-      res.json({ success: true, pointsAdded });
+      res.json({ success: true, pointsAdded, heartsLeft: progress.hearts });
     } else {
-      // Deduct Hearts
+      // 2. Deduct Hearts
       if (progress.hearts > 0) {
         await prisma.userProgress.update({
           where: { userId },
-          data: { hearts: { decrement: 1 } }
+          data: { 
+            hearts: { decrement: 1 },
+            // If they were at max hearts, start the timer now
+            lastRefillAt: progress.hearts === 5 ? new Date() : progress.lastRefillAt 
+          }
         });
         res.json({ success: false, heartsLeft: progress.hearts - 1 });
       } else {

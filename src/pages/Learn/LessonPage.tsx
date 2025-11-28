@@ -28,17 +28,20 @@ export default function LessonPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [status, setStatus] = useState<"idle" | "correct" | "wrong">("idle");
-  const [hearts, setHearts] = useState(5);
+  const [hearts, setHearts] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sessionXP, setSessionXP] = useState(0);
 
   useEffect(() => {
-    // Initial fetch of lesson data
     const fetchLesson = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/learn/lessons/${lessonId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setLesson(res.data);
+        
+        // [UPDATED] Destructure response to get lesson AND hearts
+        setLesson(res.data.lesson);
+        setHearts(res.data.userHearts);
       } catch (error) {
         toast({ title: "Error", description: "Failed to load lesson", variant: "destructive" });
         navigate('/learn');
@@ -71,14 +74,22 @@ export default function LessonPage() {
 
       if (isCorrect) {
         setStatus("correct");
-        // Play success sound here
+        
+        // [ADD THIS] Accumulate XP if the backend says we earned it
+        if (res.data.pointsAdded > 0) {
+          setSessionXP(prev => prev + res.data.pointsAdded);
+        }
+        
       } else {
         setStatus("wrong");
         setHearts(res.data.heartsLeft);
-        // Play error sound here
       }
     } catch (error) {
       console.error(error);
+      // Handle "No hearts left" error specifically if needed
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+         toast({ title: "Out of Hearts!", description: "Wait for them to refill.", variant: "destructive" });
+      }
     }
   };
 
@@ -88,8 +99,10 @@ export default function LessonPage() {
       setStatus("idle");
       setSelectedOption(null);
     } else {
-      // Lesson Complete
-      toast({ title: "Lesson Complete!", description: "You've earned 10 XP per challenge." });
+      toast({ 
+        title: "Lesson Complete!", 
+        description: `You've earned ${sessionXP} XP in this lesson.` 
+      });
       navigate('/learn');
     }
   };

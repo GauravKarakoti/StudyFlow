@@ -105,7 +105,10 @@ model UserProgress {
   user           User     @relation(fields: [userId], references: [id])
   hearts         Int      @default(5)
   points         Int      @default(0)
-  activeCourseId String?  // Optional: Link to the course they are currently "learning"
+  activeCourseId String?
+  
+  // [ADD THIS] Track when the last refill happened or hearts were full
+  lastRefillAt   DateTime @default(now()) 
 }
 
 model Unit {

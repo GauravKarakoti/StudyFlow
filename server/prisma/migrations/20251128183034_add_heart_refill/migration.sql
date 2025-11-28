@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "UserProgress" ADD COLUMN     "lastRefillAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
