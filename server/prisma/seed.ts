@@ -156,6 +156,72 @@ const subjects = [
 async function main() {
   console.log('Start seeding ...')
 
+  await prisma.course.create({
+    data: {
+      id: "java-basics", 
+      name: "Java Basics",
+      // Add dummy units and lessons
+      units: {
+        create: [
+          {
+            title: "Introduction to Java",
+            description: "Start your journey here",
+            order: 1,
+            lessons: {
+              create: [
+                {
+                  title: "Variables",
+                  order: 1,
+                  challenges: {
+                    create: [
+                      {
+                        type: "SELECT",
+                        question: "Which keyword creates a variable?",
+                        order: 1,
+                        options: {
+                          create: [
+                            { text: "var", correct: false },
+                            { text: "int", correct: true },
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  });
+  console.log('Java Basics course created.');
+
+  // 2. Create a dummy Forum Thread
+  // Note: You need a valid userId (authorId) here. 
+  // If you don't have a user, create one first or use an existing ID.
+  const user = await prisma.user.findFirst();
+  if (user) {
+    await prisma.forumThread.create({
+      data: {
+        title: "Welcome to the community!",
+        body: "Say hello to everyone here.",
+        authorId: user.id
+      }
+    });
+    console.log('Forum thread created.');
+    
+    // 3. Create dummy Leaderboard data
+    await prisma.userProgress.create({
+      data: {
+        userId: user.id,
+        hearts: 5,
+        points: 150
+      }
+    });
+    console.log('User progress created.');
+  }
+
   // --- Create Courses, Branches, Semesters ---
   // We use createMany and skipDuplicates to avoid errors if data already exists
   await prisma.course.createMany({

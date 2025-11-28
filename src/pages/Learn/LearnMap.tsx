@@ -42,7 +42,7 @@ export default function LearnMap() {
                    disabled={isLocked}
                    onClick={() => navigate(`/learn/lesson/${lesson.id}`)}
                  >
-                   {lesson.completed ? <Check /> : isLocked ? <Lock /> : <Star fill="white" />}
+                   {lesson.completed ? <Check /> : isLocked ? <Lock /> : <Star fill="purple" />}
                  </Button>
                );
              })}
