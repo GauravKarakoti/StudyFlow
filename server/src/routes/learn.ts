@@ -49,6 +49,24 @@ async function checkAndRefillHearts(userId: number) {
   return progress;
 }
 
+router.get('/courses', async (req, res) => {
+  try {
+    const courses = await prisma.course.findMany({
+      where: {
+        type: 'LEARN' // Filter for Learn courses only
+      },
+      include: {
+        _count: {
+          select: { units: true }
+        }
+      }
+    });
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch learn courses' });
+  }
+});
+
 // Get the Learning Map (Units > Lessons > Challenges)
 router.get('/courses/:courseId/units', async (req, res) => {
   const { courseId } = req.params;

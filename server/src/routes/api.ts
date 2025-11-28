@@ -3,9 +3,12 @@ import prisma from '../db.js'
 
 const router = Router()
 
-// Get all courses
 router.get('/courses', async (req, res) => {
-  const courses = await prisma.course.findMany()
+  const courses = await prisma.course.findMany({
+    where: {
+      type: 'UNIVERSITY' // [UPDATED] Filter for University courses only
+    }
+  })
   res.json(courses)
 })
 

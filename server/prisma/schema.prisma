@@ -47,11 +47,18 @@ enum Role {
   ADMIN
 }
 
+enum CourseType {
+  UNIVERSITY
+  LEARN
+}
+
 model Course {
-  id       String   @id // REMOVED @default(cuid())
+  id       String     @id
   name     String
+  // [ADD THIS] Type field with a default
+  type     CourseType @default(UNIVERSITY)
   branches Branch[]
-  units Unit[]
+  units    Unit[]
 }
 
 model Branch {

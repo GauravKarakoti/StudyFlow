@@ -160,7 +160,7 @@ async function main() {
     data: {
       id: "java-basics", 
       name: "Java Basics",
-      // Add dummy units and lessons
+      type: "LEARN",
       units: {
         create: [
           {
