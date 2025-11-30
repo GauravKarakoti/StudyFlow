@@ -17,15 +17,6 @@ const DotPattern = () => (
   />
 );
 
-const UnitHeader = ({ title, description, progress = 0 }: { title: string, description: string, progress?: number }) => (
-  <div className="sticky top-4 z-30 flex justify-center w-full mb-8">
-    <div className="bg-background/80 backdrop-blur-md border border-border/50 shadow-sm rounded-full px-6 py-2 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-      <span className="font-bold text-sm md:text-base text-foreground">{title}</span>
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{description}</span>
-    </div>
-  </div>
-);
-
 const Connector = ({ 
   startX, 
   endX, 
@@ -110,7 +101,10 @@ export default function LearnMap() {
       <div className="relative z-10 w-full max-w-lg pb-32 px-4">
         {units.map((unit, unitIndex) => (
           <div key={unit.id} className="mb-20">
-            <UnitHeader title={unit.title} description={unit.description} />
+            <div className="bg-cosmic-deep/50 p-6 rounded-2xl border border-cosmic-glow/20 mb-10">
+              <h2 className="text-2xl font-bold text-white">{unit.title}</h2>
+              <p className="text-muted-foreground">{unit.description}</p>
+            </div>
             
             <div className="flex flex-col items-center relative gap-4">
               {unit.lessons.map((lesson: any, index: number) => {
