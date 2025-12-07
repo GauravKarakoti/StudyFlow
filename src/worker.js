@@ -1,23 +1,37 @@
 const BUCKET_NAME = 'StudyFlowBeryl';
 const B2_ENDPOINT = 's3.us-east-005.backblazeb2.com';
-const ALLOWED_ORIGIN = '*'; // Security: Change to your frontend URL in production
+const ALLOWED_ORIGIN = '*'; // Security: Change to specific URL in production if needed
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range',
+};
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    // Remove the leading slash to get the key (e.g., "notes/file.pdf")
-    const key = url.pathname.slice(1);
 
-    if (request.method !== 'GET') {
-      return new Response('Method not allowed', { status: 405 });
+    // 1. Handle CORS Preflight (OPTIONS request)
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: corsHeaders,
+      });
     }
 
-    // 1. Check Cloudflare Cache first
+    if (request.method !== 'GET') {
+      return new Response('Method not allowed', { 
+        status: 405, 
+        headers: corsHeaders 
+      });
+    }
+
+    const key = url.pathname.slice(1);
     const cache = caches.default;
     let response = await cache.match(request);
 
     if (!response) {
-      // 2. If miss, sign request and fetch from Backblaze
+      // 2. Fetch from Backblaze
       const awsPath = `/${BUCKET_NAME}/${key}`;
       const signedRequest = await signAwsV4(
         `https://${B2_ENDPOINT}${awsPath}`,
@@ -29,24 +43,29 @@ export default {
         }
       );
 
-      response = await fetch(signedRequest);
+      const b2Response = await fetch(signedRequest);
 
-      // 3. Cache the response if successful
-      if (response.status === 200) {
-        response = new Response(response.body, response);
-        response.headers.set('Cache-Control', 'public, max-age=604800'); // Cache for 7 days
-        response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
-        
-        // Save to cache
+      // 3. Create a new response to modify headers (Response objects are immutable)
+      response = new Response(b2Response.body, b2Response);
+
+      // Add CORS headers to ALL responses (Success or Error)
+      response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+      
+      // Only cache if successful
+      if (b2Response.status === 200) {
+        response.headers.set('Cache-Control', 'public, max-age=604800');
         await cache.put(request, response.clone());
       }
+    } else {
+        // Ensure cached responses also get fresh CORS headers
+        response = new Response(response.body, response);
+        response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
     }
 
     return response;
   },
 };
 
-// --- AWS Signature v4 Helper Functions (Minimal Implementation) ---
 async function signAwsV4(urlStr, { method, accessKeyId, secretAccessKey, region }) {
   const url = new URL(urlStr);
   const service = 's3';
