@@ -40,7 +40,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen relative pt-20">
+    <div className="min-h-screen relative pt-24">
       <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
