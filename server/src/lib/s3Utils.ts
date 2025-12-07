@@ -24,5 +24,6 @@ const CDN_BASE_URL = process.env.CDN_WORKER_URL
 // }
 
 export async function generateSignedUrl(key: string, bucketName: string): Promise<string> {
+  console.log(`Signed URL: ${CDN_BASE_URL}/${key}`)
   return `${CDN_BASE_URL}/${key}`;
 }
