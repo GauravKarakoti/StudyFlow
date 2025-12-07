@@ -1,7 +1,5 @@
-import 'dotenv/config'
-
-const BUCKET_NAME = process.env.B2_BUCKET_NAME;
-const B2_ENDPOINT = process.env.B2_ENDPOINT_URL;
+const BUCKET_NAME = 'StudyFlowBeryl';
+const B2_ENDPOINT = 's3.us-east-005.backblazeb2.com';
 const ALLOWED_ORIGIN = '*'; // Security: Change to your frontend URL in production
 
 export default {
@@ -25,9 +23,9 @@ export default {
         `https://${B2_ENDPOINT}${awsPath}`,
         {
           method: 'GET',
-          accessKeyId: process.env.B2_APPLICATION_KEY_ID,
-          secretAccessKey: process.env.B2_APPLICATION_KEY,
-          region: process.env.B2_REGION, 
+          accessKeyId: env.B2_APPLICATION_KEY_ID,
+          secretAccessKey: env.B2_APPLICATION_KEY,
+          region: env.B2_REGION, 
         }
       );
 
