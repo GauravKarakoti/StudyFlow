@@ -52,7 +52,7 @@ router.post('/signup', async (req, res) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET!,
-      { expiresIn: '1d' }
+      { expiresIn: '365d' }
     )
 
     // Sign the user object before sending
@@ -95,7 +95,7 @@ router.post('/login', async (req, res) => {
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_SECRET!,
-    { expiresIn: '1d' }
+    { expiresIn: '365d' }
   )
 
   // Sign the user object before sending
@@ -160,7 +160,7 @@ router.post('/google', async (req, res) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET!,
-      { expiresIn: '1d' }
+      { expiresIn: '365d' }
     );
 
     const userWithSignedAvatar = await signUserAvatar({
