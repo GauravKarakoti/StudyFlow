@@ -250,11 +250,18 @@ const UNIT_TEMPLATES = [
           (lang) => `${lang} is primarily considered which kind of language?`
         ],
         options: (lang, i) => {
-          // i: question index
           if (i === 0) {
             return [
-              { text: 'Web / Scripting', correct: lang === 'JavaScript' || lang === 'PHP' || lang === 'Ruby' || lang === 'Python' || lang === 'Bash' },
-              { text: 'Systems', correct: lang === 'C' || lang === 'C++' || lang === 'Rust' || lang === 'Go' },
+              { 
+                text: 'Web / Scripting', 
+                // Add TypeScript explicitly
+                correct: ['JavaScript','PHP','Ruby','Python','Bash','TypeScript'].includes(lang) 
+              },
+              { 
+                text: 'Systems', 
+                // Add C#, Kotlin, Swift explicitly
+                correct: ['C','C++','Rust','Go','C#','Kotlin','Swift'].includes(lang) 
+              },
               { text: 'Databases', correct: lang === 'SQL' }
             ];
           } else {
