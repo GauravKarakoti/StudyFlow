@@ -7,6 +7,9 @@ import pdfWorker from "pdfjs-dist/build/pdf.worker?url";
 import { Document, Page, pdfjs } from "react-pdf"
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { Button } from "@/components/ui/button"
+import { Maximize, Minimize } from "lucide-react"
+import { createPortal } from "react-dom"
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 
@@ -17,7 +20,6 @@ type Note = {
 }
 
 const fetchNotes = async (topicId: string): Promise<Note[]> => {
-  // This existing route returns notes with the B2 key in pdfUrl
   const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/notes/${topicId}`)
   return data
 }
@@ -26,11 +28,10 @@ interface NoteViewerProps {
   topicId: string | null
 }
 
-// --- UPDATED PDFVIEWER COMPONENT ---
 interface PdfViewerComponentProps {
-    id: number; // Pass the note ID for the signed URL API call
+    id: number;
     title: string;
-    pdfKey: string; // The B2 key (note.pdfUrl)
+    pdfKey: string;
 }
 
 const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
@@ -38,6 +39,7 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
   const [isError, setIsError] = useState(false)
   const [containerWidth, setContainerWidth] = useState<number>(0)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isFullScreen, setIsFullScreen] = useState(false)
 
   const [signedPdfUrl, setSignedPdfUrl] = useState<string | null>(null);
   const [isUrlLoading, setIsUrlLoading] = useState(true);
@@ -52,6 +54,23 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
     setIsError(true);
   }
 
+  const toggleFullScreen = () => {
+    setIsFullScreen((prev) => !prev)
+  }
+
+  // Body scroll lock
+  useEffect(() => {
+    if (isFullScreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullScreen]);
+
+  // Fetch Signed URL (unchanged)
   useEffect(() => {
     if (!id || !pdfKey) return;
 
@@ -62,14 +81,11 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
       setIsUrlLoading(true);
       setSignedPdfUrl(null);
       try {
-        // Try including pdfKey as query param (many backends expect either id or key)
         const signedResp = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/content/note/signed-url/${id}`,
           { params: { key: pdfKey } }
         );
 
-        console.log("signed-url response", signedResp.data);
-        // Support several possible response shapes:
         const url =
           signedResp.data?.signedUrl ||
           signedResp.data?.url ||
@@ -79,9 +95,7 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
           throw new Error("No signed URL returned from the server");
         }
 
-        // Fetch the PDF as a blob (avoid CORS/display issues)
         const pdfResp = await axios.get(url, { responseType: "blob" });
-        console.log("Response: ", pdfResp.data)
         createdObjectUrl = URL.createObjectURL(pdfResp.data);
 
         if (!cancelled) {
@@ -106,32 +120,53 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
     };
   }, [id, pdfKey]);
 
+  // Measure Container Width (unchanged)
   useEffect(() => {
-    // If the ref isn't attached yet (e.g. still loading), skip
-    if (!containerRef.current) return;
+    const element = containerRef.current;
+    if (!element) return;
 
-    // 1. Immediate measurement to ensure we don't start at 0
-    const initialWidth = containerRef.current.getBoundingClientRect().width;
-    if (initialWidth > 0) {
-      setContainerWidth(initialWidth);
-    }
-
-    // 2. Setup Observer for updates
     const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        const width = entry.contentRect.width; 
-        setContainerWidth(width > 0 ? width : 0);
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+           const padding = isFullScreen ? 48 : 0; 
+           setContainerWidth(width - padding); 
+        }
       }
     });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(element);
+    
+    const rect = element.getBoundingClientRect();
+    if (rect.width > 0) {
+        const padding = isFullScreen ? 48 : 0;
+        setContainerWidth(rect.width - padding);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [isUrlLoading, isFullScreen]); 
+
+  // --- NEW: Improve touchpad (two-finger) scrolling when fullscreen ---
+  useEffect(() => {
+    if (!isFullScreen) return;
+
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Focus the container so wheel events go to it (important for some browsers)
+    el.focus({ preventScroll: true });
+
+    const onWheel = (e: WheelEvent) => {
+      const canScroll = el.scrollHeight > el.clientHeight;
+      e.stopPropagation();
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: true, capture: true });
 
     return () => {
-      resizeObserver.disconnect();
+      el.removeEventListener("wheel", onWheel, true);
     };
-    // Add isUrlLoading to dependencies so this runs again when loading finishes
-  }, [isUrlLoading]);
+  }, [isFullScreen]);
 
   if (isUrlLoading) {
     return (
@@ -153,52 +188,113 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
     )
   }
 
+  // PDF Document (unchanged)
+  const PdfDocument = (
+    <Document
+      file={signedPdfUrl}
+      onLoadSuccess={onDocumentLoadSuccess}
+      onLoadError={onDocumentLoadError}
+      loading={<Skeleton className="h-48 w-full" />}
+      className="flex flex-col items-center"
+    >
+      {numPages && containerWidth <= 0 && <Skeleton className="h-screen w-full" />}
+
+      {numPages && containerWidth > 0 && Array.from(new Array(numPages), (el, index) => (
+        <Page
+          key={`page_${index + 1}`}
+          pageNumber={index + 1}
+          renderTextLayer={false}
+          renderAnnotationLayer={false}
+          width={containerWidth}
+          className="mb-4 shadow-sm bg-white"
+          loading={<Skeleton className="h-96 w-full mb-4" />}
+        />
+      ))}
+    </Document>
+  );
+
+  // Fullscreen portal
+  if (isFullScreen) {
+    return createPortal(
+      <div
+        className="fixed inset-0 z-[100] bg-background flex flex-col h-screen w-screen pointer-events-auto"
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header */}
+        <div className="flex-none h-14 flex items-center justify-between px-6 border-b bg-background z-[110] shadow-sm pointer-events-auto">
+          <h2 className="text-lg font-semibold truncate pr-4">{title}</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleFullScreen}
+            title="Exit Full Screen"
+            className="cursor-pointer"
+          >
+            <Minimize className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div
+          ref={containerRef}
+          // key classes + new class for overscroll behavior / touch action
+          className="flex-1 overflow-y-auto p-6 w-full bg-gray-100/50 dark:bg-gray-900/50 pdf-fullscreen-scroll"
+          tabIndex={0}
+          style={{
+            WebkitOverflowScrolling: "touch",
+            // touchpad scroll is not affected by touchAction but keep for completeness
+            touchAction: "auto",
+          }}
+        >
+          <div className="min-h-full flex flex-col items-center pb-20 pointer-events-auto">
+            {PdfDocument}
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // Default render (unchanged, with small pointer-events fixes)
   return (
     <article className="prose dark:prose-invert max-w-none w-full mb-8">
       <style>{`
         .react-pdf__Page__canvas {
+          pointer-events: auto !important;
           max-width: 100% !important;
           height: auto !important;
           display: block;
           margin: 0 auto;
         }
+
+        .react-pdf__Page {
+          pointer-events: auto !important;
+        }
+
+        /* New: keep scroll inside the viewer (prevents scroll chaining) */
+        .pdf-fullscreen-scroll {
+          overscroll-behavior: contain;
+        }
       `}</style>
 
-      <h2>{title}</h2>
-      <Separator />
+      <div className="flex items-center justify-between">
+        <h2 className="my-0">{title}</h2>
+        <Button variant="ghost" size="icon" onClick={toggleFullScreen} title="Toggle Full Screen" className="cursor-pointer">
+            <Maximize className="h-4 w-4" />
+        </Button>
+      </div>
+      <Separator className="my-4" />
+
       {isError ? (
         <p className="text-red-500">Failed to load this PDF.</p>
       ) : (
         <div 
             onContextMenu={(e) => e.preventDefault()} 
             ref={containerRef} 
-            // Added min-h-[200px] to ensure the container has height for the observer to catch
             className="w-full overflow-hidden min-h-[200px] flex flex-col items-center"
         >
-          <Document
-            file={signedPdfUrl} 
-            onLoadSuccess={onDocumentLoadSuccess}
-            onLoadError={onDocumentLoadError}
-            loading={<Skeleton className="h-48 w-full" />}
-            className="w-full flex flex-col items-center"
-          >
-            {/* Show skeleton if we have pages but haven't calculated width yet */}
-            {numPages && containerWidth === 0 && (
-               <Skeleton className="h-screen w-full" />
-            )}
-
-            {numPages && containerWidth > 0 && Array.from(new Array(numPages), (el, index) => (
-              <Page
-                key={`page_${index + 1}`}
-                pageNumber={index + 1}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                width={containerWidth}
-                className="mb-4 shadow-sm"
-                loading={<Skeleton className="h-96 w-full mb-4" />}
-              />
-            ))}
-          </Document>
+          {PdfDocument}
         </div>
       )}
     </article>
