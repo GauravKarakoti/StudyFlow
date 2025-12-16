@@ -9,10 +9,10 @@ import axios from "axios";
 import GlobalNavigation from "./components/GlobalNavigation";
 import { useEffect, Suspense, lazy } from "react";
 import Loading from "./components/Loading";
+import Dashboard from "./pages/Dashboard";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SelectCourse = lazy(() => import("./pages/SelectCourse"));
 const SelectBranch = lazy(() => import("./pages/SelectBranch"));
