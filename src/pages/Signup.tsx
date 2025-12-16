@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { GoogleLogin } from '@react-oauth/google'; // [!code ++]
+import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios'
 
 const Signup = () => {
@@ -23,7 +23,7 @@ const Signup = () => {
   const auth = useAuth()
   const navigate = useNavigate()
 
-  // [!code ++] Handle Google Sign-up Success
+  // Handle Google Sign-up Success
   const handleGoogleSuccess = async (credentialResponse: any) => {
     setIsLoading(true);
     try {
@@ -33,7 +33,7 @@ const Signup = () => {
       });
       
       auth.login(response.data.token, response.data.user);
-      navigate('/');
+      navigate('/', { state: { showProfileSetup: true } });
     } catch (err) {
       console.error(err);
       setError('Google Sign-up failed. Please try again.');
@@ -59,7 +59,7 @@ const Signup = () => {
         password,
       })
       auth.login(response.data.token, response.data.user)
-      navigate('/') 
+      navigate('/', { state: { showProfileSetup: true } });
     } catch (err: any) {
       setIsLoading(false)
       if (err.response?.data?.message) {
@@ -121,7 +121,7 @@ const Signup = () => {
             </Button>
           </form>
 
-          {/* [!code ++] Google Sign-up Section */}
+          {/* Google Sign-up Section */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -141,7 +141,7 @@ const Signup = () => {
                 useOneTap
             />
           </div>
-          {/* [!code ++] End Google Section */}
+          {/* End Google Section */}
 
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}

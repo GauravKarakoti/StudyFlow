@@ -10,15 +10,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, LogOut, Sun, Moon, AlertTriangle } from "lucide-react"; // [!code focus] Added AlertTriangle
+import { Settings, LogOut, Sun, Moon, AlertTriangle } from "lucide-react"; // Added AlertTriangle
 import { useState, useEffect } from "react";
 import { NotificationBell } from "./NotificationBell";
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useLocation } from "react-router-dom";
 
 const Header = () => {
   const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  
+  // State for onboarding popup
+  const [showProfileHint, setShowProfileHint] = useState(false);
 
+  // Check for signup redirect
+  useEffect(() => {
+    if (location.state?.showProfileSetup) {
+      setShowProfileHint(true);
+      // Clear state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
   // Initialize theme from localStorage or default to dark
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") as
@@ -122,77 +141,109 @@ const Header = () => {
                     </Button>
                   )}
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/50 transition-all"
-                      >
-                        <Avatar className="h-10 w-10 border-2 border-primary/20">
-                          <AvatarImage
-                            src={
-                              user?.avatarUrl
-                                ? user.avatarUrl
-                                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`
-                            }
-                            alt={user?.email || "User"}
-                          />
-                          <AvatarFallback className="bg-primary/20 text-primary">
-                            {user?.email?.substring(0, 2).toUpperCase() || "US"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-56 backdrop-blur-xl bg-background/95 border-border/50"
-                      align="end"
-                      forceMount
+                  <Popover open={showProfileHint} onOpenChange={setShowProfileHint}>
+                    <PopoverTrigger asChild>
+                      <div className="relative">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="relative h-10 w-10 rounded-full hover:ring-2 hover:ring-primary/50 transition-all"
+                            >
+                              <Avatar className="h-10 w-10 border-2 border-primary/20">
+                                <AvatarImage
+                                  src={
+                                    user?.avatarUrl
+                                      ? user.avatarUrl
+                                      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`
+                                  }
+                                  alt={user?.email || "User"}
+                                />
+                                <AvatarFallback className="bg-primary/20 text-primary">
+                                  {user?.email?.substring(0, 2).toUpperCase() || "US"}
+                                </AvatarFallback>
+                              </Avatar>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            className="w-56 backdrop-blur-xl bg-background/95 border-border/50"
+                            align="end"
+                            forceMount
+                          >
+                            <DropdownMenuLabel className="font-normal">
+                              <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">
+                                  My Account
+                                </p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                  {user?.name ?? user?.email}
+                                </p>
+                              </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-border/50" />
+
+                            <DropdownMenuItem
+                              onClick={() => navigate("/settings")}
+                              className="cursor-pointer focus:bg-primary/20"
+                            >
+                              <Settings className="mr-2 h-4 w-4" />
+                              <span>Settings</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={toggleTheme}
+                              className="cursor-pointer focus:bg-primary/20"
+                            >
+                              {theme === "light" ? (
+                                <Moon className="mr-2 h-4 w-4" />
+                              ) : (
+                                <Sun className="mr-2 h-4 w-4" />
+                              )}
+                              <span>
+                                {theme === "light" ? "Dark Mode" : "Light Mode"}
+                              </span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="bg-border/50" />
+
+                            <DropdownMenuItem
+                              onClick={logout}
+                              className="cursor-pointer text-red-500 focus:bg-red-500/10 focus:text-red-500"
+                            >
+                              <LogOut className="mr-2 h-4 w-4" />
+                              <span>Log out</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </PopoverTrigger>
+
+                    <PopoverContent 
+                      side="bottom" 
+                      align="end" 
+                      className="w-64 bg-primary text-primary-foreground border-none shadow-xl z-[60]"
                     >
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">
-                            My Account
-                          </p>
-                          <p className="text-xs leading-none text-muted-foreground">
-                            {user?.name ?? user?.email}
-                          </p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-border/50" />
-
-                      <DropdownMenuItem
-                        onClick={() => navigate("/settings")}
-                        className="cursor-pointer focus:bg-primary/20"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem
-                        onClick={toggleTheme}
-                        className="cursor-pointer focus:bg-primary/20"
-                      >
-                        {theme === "light" ? (
-                          <Moon className="mr-2 h-4 w-4" />
-                        ) : (
-                          <Sun className="mr-2 h-4 w-4" />
-                        )}
-                        <span>
-                          {theme === "light" ? "Dark Mode" : "Light Mode"}
-                        </span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuSeparator className="bg-border/50" />
-
-                      <DropdownMenuItem
-                        onClick={logout}
-                        className="cursor-pointer text-red-500 focus:bg-red-500/10 focus:text-red-500"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      <div className="flex flex-col gap-2">
+                        <h4 className="font-semibold text-lg">Welcome aboard! 🎉</h4>
+                        <p className="text-sm text-primary-foreground/90">
+                          Complete your profile here to get the most out of StudyFlow.
+                        </p>
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="mt-2 w-full"
+                          onClick={() => {
+                            setShowProfileHint(false);
+                            navigate('/settings');
+                          }}
+                        >
+                          Go to Settings
+                        </Button>
+                      </div>
+                      {/* Arrow/Triangle decoration */}
+                      <div className="absolute -top-2 right-4 w-4 h-4 rotate-45 bg-primary" /> 
+                    </PopoverContent>
+                  </Popover>
                 </div>
               ) : (
                 <Button

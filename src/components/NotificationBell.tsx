@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -16,8 +16,8 @@ interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string;
-  link?: string;      // Added
-  imageUrl?: string;  // Added
+  link?: string;
+  imageUrl?: string;
 }
 
 export function NotificationBell() {
@@ -44,6 +44,20 @@ export function NotificationBell() {
   }, [token]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // New function to mark all as read
+  const markAllAsRead = async () => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/notifications/read-all`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error("Failed to mark all read");
+    }
+  };
 
   const handleNotificationClick = async (notification: Notification) => {
     // 1. Mark as read
@@ -73,19 +87,31 @@ export function NotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
+          {/* Changed dot to count badge */}
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background" />
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-background">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <h4 className="font-semibold">Notifications</h4>
-          {unreadCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {unreadCount} unread
-            </span>
-          )}
+          {/* Added Read All button */}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-auto p-0 text-xs text-muted-foreground hover:text-primary"
+                onClick={markAllAsRead}
+              >
+                <CheckCheck className="mr-1 h-3 w-3" />
+                Mark all read
+              </Button>
+            )}
+          </div>
         </div>
         <ScrollArea className="h-[350px]">
           {notifications.length === 0 ? (

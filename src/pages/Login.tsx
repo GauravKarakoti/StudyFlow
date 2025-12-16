@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,14 @@ const Login = () => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const from = location.state?.from?.pathname || '/'
 
@@ -57,6 +65,7 @@ const Login = () => {
       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/send-otp`, { phoneNumber: formattedPhone });
       console.log(`OTP sent to ${formattedPhone}`);
       setOtpSent(true);
+      setCountdown(60);
     } catch (err) {
       setError('Failed to send OTP. Ensure number includes country code (e.g., +91...)');
     } finally {
@@ -222,8 +231,8 @@ const Login = () => {
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
                 {!otpSent ? (
-                  <Button type="button" onClick={handleSendOtp} className="w-full" disabled={loading}>
-                    Send OTP via WhatsApp
+                  <Button type="button" onClick={handleSendOtp} className="w-full" disabled={loading || countdown > 0}>
+                    {countdown > 0 ? `Resend available in ${countdown}s` : 'Send OTP via WhatsApp'}
                   </Button>
                 ) : (
                   <Button type="submit" className="w-full" disabled={loading}>
