@@ -6,11 +6,15 @@ import qrcode from 'qrcode-terminal';
 const prisma = new PrismaClient();
 
 // Initialize WhatsApp Client
-// LocalAuth stores your session so you don't have to scan QR every time
 const client = new Client({
     authStrategy: new LocalAuth({ dataPath: './whatsapp-session' }),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', // <--- CRITICAL for Render/Docker
+            '--disable-gpu'            // <--- Recommended for headless environments
+        ],
         headless: true 
     }
 });
@@ -18,6 +22,10 @@ const client = new Client({
 let isClientReady = false;
 
 client.on('qr', (qr) => {
+    // 1. Log the raw string as a fallback (Copy this if the image fails)
+    console.log('QR RAW DATA:', qr); 
+    
+    // 2. Generate the terminal image
     console.log('SCAN THIS QR CODE WITH YOUR WHATSAPP:');
     qrcode.generate(qr, { small: true });
 });

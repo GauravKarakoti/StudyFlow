@@ -3,3 +3,5 @@ dist
 .env
 /generated/prisma
 public
+.wwebjs_cache
+whatsapp-session
