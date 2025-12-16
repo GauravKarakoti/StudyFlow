@@ -3,11 +3,12 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import prisma from '../db.js'
 import { Role } from '@prisma/client'
-import { generateSignedUrl } from '../lib/s3Utils.js' //
+import { generateSignedUrl } from '../lib/s3Utils.js'
 import { sendNotification } from '../lib/notification.js'
 import { OAuth2Client } from 'google-auth-library'
 import crypto from 'crypto';
 import { sendResetPasswordEmail } from '../lib/email.js';
+import { sendWhatsappMessage } from '../lib/notification.js';
 
 const router = Router()
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
@@ -207,12 +208,88 @@ router.post('/forgot-password', async (req, res) => {
     });
 
     // Send Email
-    await sendResetPasswordEmail(user.email, token);
+    await sendResetPasswordEmail(user.email as string, token);
 
     res.json({ message: 'If an account exists, an email has been sent.' });
   } catch (error) {
     console.error('Forgot password error:', error);
     res.status(500).json({ message: 'Error processing request' });
+  }
+});
+
+router.post('/send-otp', async (req, res) => {
+  console.log(`Received request to send OTP`);
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) return res.status(400).json({ message: 'Phone number required' });
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+  console.log(`Sending OTP ${code} to ${phoneNumber}`);
+  try {
+    await prisma.verificationCode.upsert({
+      where: { contact: phoneNumber },
+      update: { code, expiresAt },
+      create: { contact: phoneNumber, code, expiresAt }
+    });
+    console.log(`Generated OTP ${code} for ${phoneNumber}`);
+
+    await sendWhatsappMessage(phoneNumber, `Your StudyFlow Login Code is: ${code}`);
+    console.log(`Sent OTP ${code} to ${phoneNumber} via WhatsApp`);
+    res.json({ message: 'OTP sent via WhatsApp' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error sending OTP' });
+  }
+});
+
+// Verify OTP and Login/Signup
+router.post('/verify-otp', async (req, res) => {
+  const { phoneNumber, code } = req.body;
+
+  try {
+    const record = await prisma.verificationCode.findUnique({
+      where: { contact: phoneNumber }
+    });
+
+    if (!record || record.code !== code || record.expiresAt < new Date()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Clear OTP
+    await prisma.verificationCode.delete({ where: { contact: phoneNumber } });
+
+    // Find or Create User
+    let user = await prisma.user.findUnique({ where: { phoneNumber } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          phoneNumber,
+          role: Role.USER,
+          // Email is now optional, so this is valid
+        }
+      });
+    }
+
+    // Generate Token
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role }, // email might be null
+      process.env.JWT_SECRET!,
+      { expiresIn: '365d' }
+    );
+
+    // Sign User (Avatar helper logic from your existing file)
+    const userWithSignedAvatar = await signUserAvatar(user);
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: userWithSignedAvatar
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error verifying OTP' });
   }
 });
 

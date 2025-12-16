@@ -8,7 +8,8 @@ import React, {
 
 export interface AuthUser {
   id: number
-  email: string
+  email?: string
+  phoneNumber?: string | null
   name?: string | null     // Added
   avatarUrl?: string | null // Added
   role: 'USER' | 'ADMIN'

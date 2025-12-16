@@ -9,7 +9,8 @@ datasource db {
 
 model User {
   id                   Int            @id @default(autoincrement())
-  email                String         @unique
+  email                String?        @unique // Made optional
+  phoneNumber          String?        @unique
   password             String?
   name                 String?
   avatarUrl            String?
@@ -22,12 +23,19 @@ model User {
   // Relations
   notes                Note[]
   notifications        Notification[]
-  
-  // New: Gamification & Forum Relations
   progress             UserProgress?
   challengeProgress    ChallengeProgress[]
   forumThreads         ForumThread[]
   forumPosts           ForumPost[]
+}
+
+// New Model for OTPs
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  contact   String   @unique // Stores Phone Number
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Notification {

@@ -3,7 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -15,14 +14,19 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Moon, Sun, Upload, ArrowLeft } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Settings = () => {
   const { user, token, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const [linkPhone, setLinkPhone] = useState("");
+  const [linkOtp, setLinkOtp] = useState("");
+  const [isLinkingOtpSent, setIsLinkingOtpSent] = useState(false);
+  const [linkEmail, setLinkEmail] = useState("");
+
   const [name, setName] = useState(user?.name || "");
   const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,13 +40,32 @@ const Settings = () => {
     if (user?.name) setName(user.name);
   }, [user]);
 
-  const handleThemeToggle = (checked: boolean) => {
-    setIsDark(checked);
-    if (checked) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+  const handleSendLinkOtp = async () => {
+     try {
+       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/send-otp`, { phoneNumber: linkPhone });
+       setIsLinkingOtpSent(true);
+       toast.success("OTP sent to WhatsApp");
+     } catch (e) { toast.error("Failed to send OTP"); }
+  };
+
+  const handleVerifyLinkPhone = async () => {
+     try {
+       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/link-phone`, { 
+         phoneNumber: linkPhone, 
+         code: linkOtp 
+       }, { headers: { Authorization: `Bearer ${token}` } });
+       toast.success("Phone linked!");
+       // Trigger user reload here if possible, or manually update local user state
+     } catch (e) { toast.error("Invalid OTP or Phone in use"); }
+  };
+
+  const handleLinkEmail = async () => {
+     try {
+       await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/link-email`, { 
+         email: linkEmail
+       }, { headers: { Authorization: `Bearer ${token}` } });
+       toast.success("Email linked!");
+     } catch (e) { toast.error("Email already in use"); }
   };
 
   // Handle Text Profile Update
@@ -149,6 +172,56 @@ const Settings = () => {
 
         {/* Profile Tab */}
         <TabsContent value="profile">
+          <div className="border-t py-4 mt-4 space-y-4">
+             <h3 className="text-lg font-medium">Contact Details</h3>
+             
+             {/* Email Field */}
+             <div className="grid gap-2">
+               <Label>Email</Label>
+               {user?.email ? (
+                 <Input value={user.email} disabled className="bg-muted" />
+               ) : (
+                 <div className="flex gap-2">
+                   <Input 
+                     placeholder="Add your email" 
+                     value={linkEmail} 
+                     onChange={e => setLinkEmail(e.target.value)} 
+                   />
+                   <Button onClick={handleLinkEmail}>Link</Button>
+                 </div>
+               )}
+             </div>
+
+             {/* Phone Field */}
+             <div className="grid gap-2">
+               <Label>WhatsApp Number</Label>
+               {user?.phoneNumber ? ( // Assuming you added phoneNumber to user context/type
+                 <Input value={user.phoneNumber} disabled className="bg-muted" />
+               ) : (
+                 <div className="space-y-2">
+                    <div className="flex gap-2">
+                       <Input 
+                         placeholder="+91..." 
+                         value={linkPhone} 
+                         onChange={e => setLinkPhone(e.target.value)} 
+                         disabled={isLinkingOtpSent}
+                       />
+                       {!isLinkingOtpSent && <Button onClick={handleSendLinkOtp}>Send OTP</Button>}
+                    </div>
+                    {isLinkingOtpSent && (
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="OTP" 
+                          value={linkOtp} 
+                          onChange={e => setLinkOtp(e.target.value)} 
+                        />
+                        <Button onClick={handleVerifyLinkPhone}>Verify</Button>
+                      </div>
+                    )}
+                 </div>
+               )}
+             </div>
+          </div>
           <Card className="cosmic-card">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>

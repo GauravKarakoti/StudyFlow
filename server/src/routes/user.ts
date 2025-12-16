@@ -138,4 +138,46 @@ router.put('/password', async (req: any, res) => {
   }
 });
 
+router.post('/link-phone', async (req: any, res) => {
+  const { phoneNumber, code } = req.body;
+  const userId = req.user.id;
+
+  // Verify OTP first
+  const record = await prisma.verificationCode.findUnique({ where: { contact: phoneNumber } });
+  
+  if (!record || record.code !== code) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  // Check if phone already taken
+  const existing = await prisma.user.findUnique({ where: { phoneNumber } });
+  if (existing) return res.status(400).json({ message: "Phone number already in use" });
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { phoneNumber }
+  });
+  
+  await prisma.verificationCode.delete({ where: { contact: phoneNumber } });
+  
+  res.json({ message: "Phone number linked successfully" });
+});
+
+// Link Email (Authenticated)
+router.post('/link-email', async (req: any, res) => {
+  const { email } = req.body;
+  const userId = req.user.id;
+
+  // Check if email taken
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return res.status(400).json({ message: "Email already in use" });
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { email }
+  });
+
+  res.json({ message: "Email linked successfully", user: updatedUser });
+});
+
 export default router;
