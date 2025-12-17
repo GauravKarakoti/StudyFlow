@@ -141,7 +141,13 @@ const Header = () => {
                     </Button>
                   )}
 
-                  <Popover open={showProfileHint} onOpenChange={setShowProfileHint}>
+                  <Popover 
+                    open={showProfileHint} 
+                    onOpenChange={(open) => {
+                      // Only allow closing the popover, preventing manual opening via click
+                      if (!open) setShowProfileHint(false);
+                    }}
+                  >
                     <PopoverTrigger asChild>
                       <div className="relative">
                         <DropdownMenu>
