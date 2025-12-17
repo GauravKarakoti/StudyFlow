@@ -63,6 +63,7 @@ router.post('/signup', async (req, res) => {
       role: user.role,
       name: user.name,          
       avatarUrl: user.avatarUrl,
+      phoneNumber: user.phoneNumber,
     });
 
     res.status(201).json({
@@ -106,6 +107,7 @@ router.post('/login', async (req, res) => {
     role: user.role,
     name: user.name,          
     avatarUrl: user.avatarUrl,
+    phoneNumber: user.phoneNumber,
   });
 
   res.json({
@@ -170,6 +172,7 @@ router.post('/google', async (req, res) => {
       role: user.role,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      phoneNumber: user.phoneNumber,
     });
 
     res.json({

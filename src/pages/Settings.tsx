@@ -254,13 +254,18 @@ const Settings = () => {
                        {!isEmailOtpSent && <Button onClick={handleSendEmailOtp}>Send OTP</Button>}
                     </div>
                     {isEmailOtpSent && (
-                      <div className="flex gap-2">
-                        <Input 
-                          placeholder="Enter OTP from Email" 
-                          value={linkEmailOtp} 
-                          onChange={e => setLinkEmailOtp(e.target.value)} 
-                        />
-                        <Button onClick={handleVerifyEmail} variant="secondary">Verify</Button>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input 
+                            placeholder="Enter OTP from Email" 
+                            value={linkEmailOtp} 
+                            onChange={e => setLinkEmailOtp(e.target.value)} 
+                          />
+                          <Button onClick={handleVerifyEmail} variant="secondary">Verify</Button>
+                        </div>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-500 font-medium">
+                          ⚠️ If you haven't received the code, please check your spam folder.
+                        </p>
                       </div>
                     )}
                  </div>
