@@ -2,56 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Light Theme Configuration
-      Base Color: #F5EBFA -> HSL(280, 50%, 95%)
-      Contrast: Deep Purple -> HSL(280, 72%, 11%)
+    /* Improvised Light Theme Configuration
+       Base: Clean Cosmic White -> HSL(270, 30%, 98%)
+       Contrast: Void Purple -> HSL(270, 60%, 10%)
     */
-    --background: 280 50% 98%; /* Slightly lighter for cleaner look */
-    --foreground: 270 60% 15%; /* Richer dark purple */
+    --background: 270 30% 98%; /* Whiter, cleaner canvas */
+    --foreground: 270 60% 10%; /* Darker text for crisp readability */
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* Pure white cards for better depth */
     --card-foreground: 270 60% 15%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 270 60% 15%;
 
-    --primary: 270 85% 55%; /* Electric Purple */
+    /* Richer Electric Purple */
+    --primary: 270 90% 52%; 
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 310 80% 65%; /* Vibrant Pink/Orchid for contrast */
+    /* Deep Vibrant Orchid - Improved contrast for white text */
+    --secondary: 310 85% 60%; 
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 270 20% 95%;
-    --muted-foreground: 270 20% 45%;
+    /* Cool neutral tones with a hint of purple */
+    --muted: 270 20% 96%;
+    --muted-foreground: 270 10% 45%;
 
-    --accent: 250 80% 60%; /* Blue-Purple accent */
+    /* Sharper Blue-Purple Accent */
+    --accent: 250 85% 65%; 
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 270 20% 90%;
-    --input: 270 20% 90%;
-    --ring: 270 85% 55%;
+    --border: 270 15% 92%; /* Subtle borders */
+    --input: 270 15% 92%;
+    --ring: 270 90% 52%; /* Matches primary */
 
     --radius: 1rem;
 
-    --gradient-start: 270 85% 55%;
-    --gradient-mid: 310 80% 65%;
-    --gradient-end: 250 80% 60%;
+    /* Updated Gradients for smoother flow */
+    --gradient-start: 270 90% 52%;
+    --gradient-mid: 310 85% 60%;
+    --gradient-end: 250 85% 65%;
     
-    /* Cosmic tokens adapted for light mode */
-    --cosmic-glow: 270 85% 55%; 
-    --cosmic-deep: 280 50% 98%;
+    /* Cosmic tokens */
+    --cosmic-glow: 270 90% 52%; 
+    --cosmic-deep: 270 30% 98%;
     --cosmic-mid: 0 0% 100%;
 
-    --glow-strength: 0.1;
+    --glow-strength: 0.15; /* Slightly increased for better visibility */
     --glow-shadow: 25px;
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
