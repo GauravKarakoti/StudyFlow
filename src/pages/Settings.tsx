@@ -351,15 +351,6 @@ const Settings = () => {
                     className="max-w-md bg-background/50"
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={user?.email || ""}
-                    disabled
-                    className="max-w-md bg-muted/50"
-                  />
-                </div>
               </div>
             </CardContent>
             <CardFooter>
