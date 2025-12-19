@@ -144,17 +144,43 @@ const PdfViewer = ({ id, title, pdfKey }: PdfViewerComponentProps) => {
     const el = containerRef.current;
     if (!el) return;
 
-    el.focus({ preventScroll: true });
+    if (!window.matchMedia("(pointer: fine)").matches) {
+      console.log("Mobile device detected, skipping wheel event hijack.");
+      // still focus for keyboard users on some laptops, but skip wheel hijack
+      try { el.focus({ preventScroll: true }); } catch {}
+      return;
+    }
+
+    try {
+      el.focus({ preventScroll: true });
+    } catch {}
 
     const onWheel = (e: WheelEvent) => {
-      // allow normal wheel behavior, just stop propagation if needed
+      if (e.deltaY === 0) return;
+
+      const delta = e.deltaY;
+      const scrollTop = el.scrollTop;
+      const clientHeight = el.clientHeight;
+      const scrollHeight = el.scrollHeight;
+      const atTop = scrollTop <= 0;
+      const atBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+
+      // If scrolling up when already at top OR scrolling down when already at bottom:
+      // let the event bubble so the page can scroll.
+      if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
+        return;
+      }
+
+      // Otherwise, this container can scroll — prevent body/page scroll and stop propagation.
+      // passive: false is required in addEventListener so preventDefault works.
       e.stopPropagation();
+      e.preventDefault();
     };
 
-    el.addEventListener("wheel", onWheel, { passive: true, capture: true });
+    el.addEventListener("wheel", onWheel as EventListener, { passive: true, capture: true });
 
     return () => {
-      el.removeEventListener("wheel", onWheel, true);
+      el.removeEventListener("wheel", onWheel as EventListener, true);
     };
   }, [isFullScreen]);
 
