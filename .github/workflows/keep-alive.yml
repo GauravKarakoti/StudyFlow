@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping the bot's health check endpoint
-        run: curl -s "https://studyflow-c4rt.onrender.com" > /dev/null
+        run: curl -s "https://studyflow-xlkc.onrender.com" > /dev/null
