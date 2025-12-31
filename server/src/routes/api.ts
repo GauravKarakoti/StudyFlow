@@ -3,10 +3,45 @@ import prisma from '../db.js'
 
 const router = Router()
 
+// --- NEW SEARCH ENDPOINT ---
+router.get('/search-data', async (req, res) => {
+  try {
+    // 1. Fetch all University Courses
+    const courses = await prisma.course.findMany({
+      where: { type: 'UNIVERSITY' },
+      select: { id: true, name: true }
+    });
+
+    // 2. Fetch all Branches with their Course Name
+    const branches = await prisma.branch.findMany({
+      include: {
+        course: { select: { name: true } }
+      }
+    });
+
+    // 3. Fetch all Subjects with Branch and Semester details
+    const subjects = await prisma.subject.findMany({
+      include: {
+        branch: {
+          include: {
+            course: { select: { id: true } } // Needed for navigation URL
+          }
+        },
+        semester: { select: { id: true, name: true } }
+      }
+    });
+
+    res.json({ courses, branches, subjects });
+  } catch (error) {
+    console.error("Error fetching search data:", error);
+    res.status(500).json({ error: "Failed to fetch search data" });
+  }
+});
+
 router.get('/courses', async (req, res) => {
   const courses = await prisma.course.findMany({
     where: {
-      type: 'UNIVERSITY' // [UPDATED] Filter for University courses only
+      type: 'UNIVERSITY'
     }
   })
   res.json(courses)
@@ -50,7 +85,7 @@ router.get('/topics/:subjectId', async (req, res) => {
   const { subjectId } = req.params
   const topics = await prisma.topic.findMany({
     where: { subjectId },
-    orderBy: { name: 'asc' } // Added ordering here
+    orderBy: { name: 'asc' }
   })
   res.json(topics)
 })
