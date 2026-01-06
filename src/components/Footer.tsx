@@ -225,21 +225,12 @@ const Footer = () => {
             </div>
             <div className="flex gap-4 mt-2">
               <span>
-                Powered by{" "}
+                Check the{" "}
                 <a
-                  href="https://github.com/abhaykanojia16"
-                  className="hover:text-primary transition-colors"
+                  href="https://github.com/GauravKarakoti/StudyFlow"
+                  className="text-secondary hover:text-primary transition-colors"
                 >
-                  Freakooh
-                </a>
-              </span>
-              <span>
-                Created by{" "}
-                <a
-                  href="https://github.com/GauravKarakoti"
-                  className="hover:text-primary transition-colors"
-                >
-                  Gaurav Karakoti
+                  Source Code
                 </a>
               </span>
             </div>
