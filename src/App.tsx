@@ -62,93 +62,92 @@ const App = () => {
   // }, []);
 
   return (
-    // <QueryClientProvider client={queryClient}>
-    //   <TooltipProvider>
-    //     <Toaster />
-    //     <Sonner />
-    //     <BrowserRouter>
-    //       <GlobalNavigation />
-    //       <Suspense fallback={<Loading />}>
-    //         <Routes>
-    //           <Route path="/" element={<Index />} />
-    //           <Route path="/login" element={<Login />} />
-    //           <Route path="/signup" element={<Signup />} />
-    //           <Route path="/forgot-password" element={<ForgotPassword />} />
-    //           <Route path="/reset-password" element={<ResetPassword />} />
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <GlobalNavigation />
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-    //           <Route element={<ProtectedRoute />}>
-    //             <Route path="/select-course" element={<SelectCourse />} />
-    //             <Route
-    //               path="/select-branch/:courseId"
-    //               element={<SelectBranch />}
-    //             />
-    //             <Route
-    //               path="/select-semester/:courseId/:branchId"
-    //               element={<SelectSemester />}
-    //             />
-    //             <Route
-    //               path="/dashboard/:courseId/:branchId/:semesterId"
-    //               element={<Dashboard />}
-    //             />
-    //             <Route path="/dashboard" element={<SelectCourse />} />
-    //             <Route path="/settings" element={<Settings />} />
-    //             <Route
-    //               path="/learn"
-    //               element={
-    //                 <LearnLayout>
-    //                   <LearnMap />
-    //                 </LearnLayout>
-    //               }
-    //             />
-    //             <Route
-    //               path="/learn/courses"
-    //               element={
-    //                 <LearnLayout>
-    //                   <LearnCourses />
-    //                 </LearnLayout>
-    //               }
-    //             />
-    //             <Route
-    //               path="/learn/lesson/:lessonId"
-    //               element={<LessonPage />}
-    //             />
-    //             <Route
-    //               path="/learn/leaderboard"
-    //               element={
-    //                 <LearnLayout>
-    //                   <LeaderboardPage />
-    //                 </LearnLayout>
-    //               }
-    //             />
-    //             <Route
-    //               path="/learn/forum"
-    //               element={
-    //                 <LearnLayout>
-    //                   <ForumPage />
-    //                 </LearnLayout>
-    //               }
-    //             />
-    //             <Route
-    //               path="/learn/forum/:threadId"
-    //               element={
-    //                 <LearnLayout>
-    //                   <ForumThreadPage />
-    //                 </LearnLayout>
-    //               }
-    //             />
-    //           </Route>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/select-course" element={<SelectCourse />} />
+                <Route
+                  path="/select-branch/:courseId"
+                  element={<SelectBranch />}
+                />
+                <Route
+                  path="/select-semester/:courseId/:branchId"
+                  element={<SelectSemester />}
+                />
+                <Route
+                  path="/dashboard/:courseId/:branchId/:semesterId"
+                  element={<Dashboard />}
+                />
+                <Route path="/dashboard" element={<SelectCourse />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route
+                  path="/learn"
+                  element={
+                    <LearnLayout>
+                      <LearnMap />
+                    </LearnLayout>
+                  }
+                />
+                <Route
+                  path="/learn/courses"
+                  element={
+                    <LearnLayout>
+                      <LearnCourses />
+                    </LearnLayout>
+                  }
+                />
+                <Route
+                  path="/learn/lesson/:lessonId"
+                  element={<LessonPage />}
+                />
+                <Route
+                  path="/learn/leaderboard"
+                  element={
+                    <LearnLayout>
+                      <LeaderboardPage />
+                    </LearnLayout>
+                  }
+                />
+                <Route
+                  path="/learn/forum"
+                  element={
+                    <LearnLayout>
+                      <ForumPage />
+                    </LearnLayout>
+                  }
+                />
+                <Route
+                  path="/learn/forum/:threadId"
+                  element={
+                    <LearnLayout>
+                      <ForumThreadPage />
+                    </LearnLayout>
+                  }
+                />
+              </Route>
 
-    //           <Route element={<AdminRoute />}>
-    //             <Route path="/admin" element={<AdminDashboard />} />
-    //           </Route>
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
 
-    //           <Route path="*" element={<NotFound />} />
-    //         </Routes>
-    //       </Suspense>
-    //     </BrowserRouter>
-    //   </TooltipProvider>
-    // </QueryClientProvider>
-    <div>Website no longer in production hai ziii!!!!!!!!!!!!!!!!!</div>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
